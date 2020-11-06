@@ -16,7 +16,7 @@ public class Conectar {
      public Connection conexion() {
          try {
              Class.forName("com.mysql.jdbc.Driver");
-             conectar = DriverManager.getConnection("jdbc:mysql://localhost:3305/db_sistema", "root", "Jimenez023.");
+             conectar = DriverManager.getConnection("jdbc:mysql://localhost:3305/ferreteriadb", "root", "Jimenez023.");
          } catch (Exception e) {
              System.out.println(e.getMessage()); 
          }
