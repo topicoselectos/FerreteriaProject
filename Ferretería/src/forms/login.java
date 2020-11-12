@@ -132,8 +132,8 @@ public class login extends javax.swing.JFrame {
             txtusuario.setText("");
                 pswd.setText("");
         }else{
-            if((usuario.equals("Edward") && password.equals("Jimenez02"))||
-                    (usuario.equals("Rolando") && password.equals("1234"))){
+            if((usuario.equals("Edward Arce") && password.equals("Jimenez02"))||
+                    (usuario.equals("Rolando Solorzano") && password.equals("1234"))){
              JOptionPane.showMessageDialog(null, "BIENVENIDO!!");
              productos p = new productos();
              p.setVisible(true);
