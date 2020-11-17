@@ -5,6 +5,12 @@
  */
 package forms;
 
+import Clases.Conectar;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import javax.swing.JOptionPane;
 
 /**
@@ -13,9 +19,10 @@ import javax.swing.JOptionPane;
  */
 public class login extends javax.swing.JFrame {
 
-    /**
-     * Creates new form login
-     */
+    Conectar co = new Conectar();   
+    Connection con = co.conexion();
+
+    
     public login() {
         initComponents();
         this.setResizable(false);
@@ -121,28 +128,44 @@ public class login extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
+    public void ValidarUsuario(){
+        
+        
+        int resultado  = 0; 
+        String pass= String.valueOf(pswd.getPassword());
+        String usuario = txtusuario.getText();
+        String SQL = "SELECT * FROM tb_empleado where Cedula='"+usuario+"' AND Contraseña='"+pass+"'";
+        
+        try{
+            Statement st = con.createStatement();
+            ResultSet ra=st.executeQuery(SQL);
+            
+            if(ra.next()){
+                resultado = 1;
+                
+                if(resultado == 1){
+                    Menu m = new Menu();
+                    m.setVisible(true);
+                    this.dispose();
+                }
+                
+            }else{
+                JOptionPane.showMessageDialog(null, "Error de acceso....");
+            }
+            
+        }catch(Exception e){
+            JOptionPane.showMessageDialog(null, "Error de Registro " + e.getMessage());
+        }
+    }    
+    
+    
+    
+    
+    
     private void btnloginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnloginActionPerformed
 
-        
-        String usuario = txtusuario.getText();
-        String password = pswd.getText();
-        
-        if(usuario.isEmpty() || password.isEmpty()){
-            JOptionPane.showMessageDialog(null, "Debe completar correctamente las casillas");
-            txtusuario.setText("");
-                pswd.setText("");
-        }else{
-            if((usuario.equals("Edward Arce") && password.equals("Jimenez02"))||
-                    (usuario.equals("Rolando Solorzano") && password.equals("1234"))){
-             JOptionPane.showMessageDialog(null, "BIENVENIDO!!");
-             productos p = new productos();
-             p.setVisible(true);
-            }else{
-                JOptionPane.showMessageDialog(null, "Debe ingresar correctamente sus datos");
-                txtusuario.setText("");
-                pswd.setText("");
-                        }
-        }        
+        ValidarUsuario();
         // TODO add your handling code here:
     }//GEN-LAST:event_btnloginActionPerformed
 

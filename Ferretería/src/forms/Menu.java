@@ -5,7 +5,14 @@
  */
 package forms;
 
+import java.sql.Connection;
+import Clases.Conectar;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import javafx.animation.Animation;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -13,12 +20,15 @@ import javafx.animation.Animation;
  */
 public class Menu extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Menu
-     */
+    Conectar co = new Conectar();   
+    Connection con = co.conexion();
+    PreparedStatement ps = null;
+    ResultSet rs;
+    
     public Menu() {
         initComponents();
         setLocationRelativeTo(null);
+        
 
     }
 
@@ -45,13 +55,15 @@ public class Menu extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        txt_buscar = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        jtableProducts = new javax.swing.JTable();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
+        btnconsulta = new javax.swing.JButton();
+        btndesplegar = new javax.swing.JButton();
         pnlInventario = new javax.swing.JPanel();
         pnlAdministracion = new javax.swing.JPanel();
 
@@ -125,29 +137,34 @@ public class Menu extends javax.swing.JFrame {
         jButton1.setContentAreaFilled(false);
         pnlCajeros.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 10, 180, 50));
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/caja.png"))); // NOI18N
-        jButton2.setText("Enviar a Cajas");
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/CarritoCompras.png"))); // NOI18N
+        jButton2.setText("Añadir al carrito");
         jButton2.setBorder(null);
         jButton2.setBorderPainted(false);
         jButton2.setContentAreaFilled(false);
-        pnlCajeros.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(970, 360, 190, 50));
+        pnlCajeros.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 20, 200, 50));
 
         jLabel2.setText("Codigo o Producto");
         pnlCajeros.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 130, -1, 20));
-        pnlCajeros.add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 130, 670, -1));
+        pnlCajeros.add(txt_buscar, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 130, 670, -1));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        jtableProducts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+
             },
             new String [] {
-                "Articulo", "Stock", "Cantidad"
+                "Código", "Articulo", "Descripción", "Stock", "Precio"
             }
-        ));
-        jScrollPane1.setViewportView(jTable1);
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(jtableProducts);
 
         pnlCajeros.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 170, 790, 270));
 
@@ -162,6 +179,22 @@ public class Menu extends javax.swing.JFrame {
 
         jLabel6.setText("Total:");
         pnlCajeros.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(900, 220, -1, -1));
+
+        btnconsulta.setText("Consultar Producto");
+        btnconsulta.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnconsultaActionPerformed(evt);
+            }
+        });
+        pnlCajeros.add(btnconsulta, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 460, -1, 50));
+
+        btndesplegar.setText("Desplegar todos los productos");
+        btndesplegar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btndesplegarActionPerformed(evt);
+            }
+        });
+        pnlCajeros.add(btndesplegar, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 460, -1, 50));
 
         pnlVendedores.add(pnlCajeros, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1240, 610));
 
@@ -200,15 +233,74 @@ public class Menu extends javax.swing.JFrame {
 
     private void btnMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMenuActionPerformed
         // TODO add your handling code here:
-        int posicion = pnlMenuDeslizable.getX();
-        if (posicion > -1) {
-
-            Animacion.Animacion.mover_izquierda(0, -264, 2, 2, pnlMenuDeslizable);
-
-        } else {
-            Animacion.Animacion.mover_derecha(-264, 0, 2, 2, pnlMenuDeslizable);
-        }
+       
     }//GEN-LAST:event_btnMenuActionPerformed
+
+    private void btnconsultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnconsultaActionPerformed
+     String cod = txt_buscar.getText();
+        
+        try {
+                DefaultTableModel modelo = new DefaultTableModel();
+                jtableProducts.setModel(modelo);
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto WHERE idtb_producto =" + cod;
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                int cantidadColumna = rsMd.getColumnCount();
+                modelo.addColumn("Código");
+                modelo.addColumn("Artículo");
+                modelo.addColumn("Descripción");
+                modelo.addColumn("Stock");
+                modelo.addColumn("Precio");
+                while(rs.next()){
+                    Object[] fila = new Object[cantidadColumna];
+                    
+                    for(int i = 0; i<cantidadColumna; i++){
+                        fila[i] = rs.getObject(i+1);
+                    }
+                    modelo.addRow(fila);
+                }
+                
+                
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }//GEN-LAST:event_btnconsultaActionPerformed
+
+    private void btndesplegarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btndesplegarActionPerformed
+       
+        try {
+                DefaultTableModel modelo = new DefaultTableModel();
+                jtableProducts.setModel(modelo);
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto";
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                int cantidadColumna = rsMd.getColumnCount();
+                modelo.addColumn("Código");
+                modelo.addColumn("Artículo");
+                modelo.addColumn("Descripción");
+                modelo.addColumn("Stock");
+                modelo.addColumn("Precio");
+                while(rs.next()){
+                    Object[] fila = new Object[cantidadColumna];
+                    
+                    for(int i = 0; i<cantidadColumna; i++){
+                        fila[i] = rs.getObject(i+1);
+                    }
+                    modelo.addRow(fila);
+                }
+                
+                
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+        
+    }//GEN-LAST:event_btndesplegarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -253,6 +345,8 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton btnCajeros;
     private javax.swing.JButton btnInventario;
     private javax.swing.JButton btnVendedores;
+    private javax.swing.JButton btnconsulta;
+    private javax.swing.JButton btndesplegar;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton4;
@@ -264,13 +358,13 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTable jtableProducts;
     private javax.swing.JPanel pnlAdministracion;
     private javax.swing.JPanel pnlCajeros;
     private javax.swing.JPanel pnlInventario;
     private javax.swing.JPanel pnlMenu;
     private javax.swing.JPanel pnlMenuDeslizable;
     private javax.swing.JPanel pnlVendedores;
+    private javax.swing.JTextField txt_buscar;
     // End of variables declaration//GEN-END:variables
 }

@@ -12,6 +12,9 @@ public class productos extends javax.swing.JFrame {
      */
     public productos() {
         initComponents();
+        
+        this.setResizable(false);
+        setLocationRelativeTo(this);  
     }
 
   
