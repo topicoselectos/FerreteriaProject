@@ -7,6 +7,7 @@ package forms;
 
 import java.sql.Connection;
 import Clases.Conectar;
+import forms.CarritoCompras;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -22,16 +23,113 @@ public class Menu extends javax.swing.JFrame {
 
     Conectar co = new Conectar();   
     Connection con = co.conexion();
+    
     PreparedStatement ps = null;
     ResultSet rs;
     
+    
+    public static int filaseleccionada;
+    public static String nombre;
+    public static int codigo;
+    public static String desc;
+    public static int precioU;
+    public static int stock;
     public Menu() {
         initComponents();
         setLocationRelativeTo(null);
         
-
+ 
     }
 
+    public void BusquedaCodigo(){
+        String cod = txt_buscar.getText();
+        
+        try {
+                DefaultTableModel modelo = new DefaultTableModel();
+                jtableProducts.setModel(modelo);
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto WHERE idtb_producto=" + cod;
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                int cantidadColumna = rsMd.getColumnCount();
+                modelo.addColumn("Código");
+                modelo.addColumn("Artículo");
+                modelo.addColumn("Descripción");
+                modelo.addColumn("Stock");
+                modelo.addColumn("Precio");
+                do{
+                if(rs.next()){
+                    Object[] fila = new Object[cantidadColumna];
+                    
+                    for(int i = 0; i<cantidadColumna; i++){
+                        fila[i] = rs.getObject(i+1);
+                    }
+                    modelo.addRow(fila);
+                    txtNombre.setText(""+fila[1]);
+                }else{
+                    JOptionPane.showMessageDialog(null, "Artículo no encontrado en nuestra base de datos", "¡Consulta Fallida!", JOptionPane.OK_OPTION);
+                    txtNombre.setText("");
+                    txt_buscar.setText("");
+                }
+                }while(rs.next());  
+                
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Por favor inrgese el dato a buscar en la parte de arriba de la pestaña","Advertencia",JOptionPane.WARNING_MESSAGE);
+        }
+        
+    }
+    
+    public void BusquedaNombre(){
+         String cod = txtNombre.getText();
+        
+        try {
+                DefaultTableModel modelo = new DefaultTableModel();
+                jtableProducts.setModel(modelo);
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto WHERE Nombre LIKE '%" + cod+"%'";
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                int cantidadColumna = rsMd.getColumnCount();
+                modelo.addColumn("Código");
+                modelo.addColumn("Artículo");
+                modelo.addColumn("Descripción");
+                modelo.addColumn("Stock");
+                modelo.addColumn("Precio");
+                while(rs.next()){
+                    Object[] fila = new Object[cantidadColumna];
+                    
+                    for(int i = 0; i<cantidadColumna; i++){
+                        fila[i] = rs.getObject(i+1);
+                    }
+                    modelo.addRow(fila);
+                    
+                }
+                
+                
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Artículo no encontrado","Advertencia",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    public void limpiarTabla(){
+        try{
+            DefaultTableModel modelo = new DefaultTableModel();
+            jtableProducts.setModel(modelo);
+            modelo.setRowCount(0);
+            modelo.addColumn("Código");
+                modelo.addColumn("Artículo");
+                modelo.addColumn("Descripción");
+                modelo.addColumn("Stock");
+                modelo.addColumn("Precio");
+            
+        }catch(Exception e){
+            JOptionPane.showMessageDialog(null, "Eroor al limpiar tabla","1Error¡",JOptionPane.ERROR);
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -55,7 +153,7 @@ public class Menu extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        txt_buscar = new javax.swing.JTextField();
+        txtNombre = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         jtableProducts = new javax.swing.JTable();
         jLabel3 = new javax.swing.JLabel();
@@ -64,6 +162,11 @@ public class Menu extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         btnconsulta = new javax.swing.JButton();
         btndesplegar = new javax.swing.JButton();
+        txtprueba = new javax.swing.JTextField();
+        btniralcarrito = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
+        txt_buscar = new javax.swing.JTextField();
+        btnlimpiar = new javax.swing.JButton();
         pnlInventario = new javax.swing.JPanel();
         pnlAdministracion = new javax.swing.JPanel();
 
@@ -98,7 +201,7 @@ public class Menu extends javax.swing.JFrame {
         btnAdministracion.setBorderPainted(false);
         btnAdministracion.setContentAreaFilled(false);
         btnAdministracion.setDefaultCapable(false);
-        pnlMenuDeslizable.add(btnAdministracion, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 450, 200, 60));
+        pnlMenuDeslizable.add(btnAdministracion, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 430, 200, 60));
 
         btnVendedores.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/Carrito.png"))); // NOI18N
         btnVendedores.setText("Vendedores");
@@ -111,13 +214,13 @@ public class Menu extends javax.swing.JFrame {
         btnCajeros.setBorder(null);
         btnCajeros.setBorderPainted(false);
         btnCajeros.setContentAreaFilled(false);
-        pnlMenuDeslizable.add(btnCajeros, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 280, 160, 60));
+        pnlMenuDeslizable.add(btnCajeros, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 270, 160, 60));
 
         btnInventario.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/inventario.png"))); // NOI18N
         btnInventario.setText("Inventario");
         btnInventario.setBorder(null);
         btnInventario.setContentAreaFilled(false);
-        pnlMenuDeslizable.add(btnInventario, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 370, 160, 60));
+        pnlMenuDeslizable.add(btnInventario, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 350, 160, 60));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/ferremundo_245.png"))); // NOI18N
         jLabel1.setText("jLabel1");
@@ -142,11 +245,16 @@ public class Menu extends javax.swing.JFrame {
         jButton2.setBorder(null);
         jButton2.setBorderPainted(false);
         jButton2.setContentAreaFilled(false);
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
         pnlCajeros.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 20, 200, 50));
 
-        jLabel2.setText("Codigo o Producto");
+        jLabel2.setText("Nombre:");
         pnlCajeros.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 130, -1, 20));
-        pnlCajeros.add(txt_buscar, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 130, 670, -1));
+        pnlCajeros.add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 130, 670, -1));
 
         jtableProducts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -195,6 +303,27 @@ public class Menu extends javax.swing.JFrame {
             }
         });
         pnlCajeros.add(btndesplegar, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 460, -1, 50));
+        pnlCajeros.add(txtprueba, new org.netbeans.lib.awtextra.AbsoluteConstraints(870, 340, 220, -1));
+
+        btniralcarrito.setText("Ir al carrito");
+        btniralcarrito.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btniralcarritoActionPerformed(evt);
+            }
+        });
+        pnlCajeros.add(btniralcarrito, new org.netbeans.lib.awtextra.AbsoluteConstraints(1100, 90, -1, -1));
+
+        jLabel7.setText("Codigo:");
+        pnlCajeros.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 100, -1, 20));
+        pnlCajeros.add(txt_buscar, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 100, 670, -1));
+
+        btnlimpiar.setText("Limpiar");
+        btnlimpiar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnlimpiarActionPerformed(evt);
+            }
+        });
+        pnlCajeros.add(btnlimpiar, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 470, -1, 40));
 
         pnlVendedores.add(pnlCajeros, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1240, 610));
 
@@ -237,35 +366,11 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnMenuActionPerformed
 
     private void btnconsultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnconsultaActionPerformed
-     String cod = txt_buscar.getText();
         
-        try {
-                DefaultTableModel modelo = new DefaultTableModel();
-                jtableProducts.setModel(modelo);
-                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto WHERE idtb_producto =" + cod;
-                
-                ps = con.prepareStatement(SQL);
-                rs = ps.executeQuery();
-                
-                ResultSetMetaData rsMd = rs.getMetaData();
-                int cantidadColumna = rsMd.getColumnCount();
-                modelo.addColumn("Código");
-                modelo.addColumn("Artículo");
-                modelo.addColumn("Descripción");
-                modelo.addColumn("Stock");
-                modelo.addColumn("Precio");
-                while(rs.next()){
-                    Object[] fila = new Object[cantidadColumna];
-                    
-                    for(int i = 0; i<cantidadColumna; i++){
-                        fila[i] = rs.getObject(i+1);
-                    }
-                    modelo.addRow(fila);
-                }
-                
-                
-        } catch (Exception e) {
-            System.err.println(e.toString());
+        if("".equals(txtNombre.getText())){
+            BusquedaCodigo();
+        }else{
+            BusquedaNombre();
         }
     }//GEN-LAST:event_btnconsultaActionPerformed
 
@@ -301,6 +406,46 @@ public class Menu extends javax.swing.JFrame {
         }
         
     }//GEN-LAST:event_btndesplegarActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+       CarritoCompras c = new CarritoCompras();
+        int v = 0;
+        
+        
+        try {
+                filaseleccionada = jtableProducts.getSelectedRow();
+               
+                if(filaseleccionada == -1){
+                    JOptionPane.showMessageDialog(null, "NO HA SELECCIONADO NINGUNA FILA!!!");
+                }else{
+                    codigo = (int)jtableProducts.getValueAt(filaseleccionada, 0);
+                    nombre = (String) jtableProducts.getValueAt(filaseleccionada, 1);
+                    desc= (String) jtableProducts.getValueAt(filaseleccionada, 2);
+                    stock = (int)jtableProducts.getValueAt(filaseleccionada, 3);
+                    precioU = (int)jtableProducts.getValueAt(filaseleccionada, 4);
+                    txtprueba.setText(""+precioU);
+                    
+                }
+        } catch (Exception e) {
+            
+            System.err.println(e);
+        }
+       
+       
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void btniralcarritoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btniralcarritoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btniralcarritoActionPerformed
+
+    private void btnlimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnlimpiarActionPerformed
+        
+        txtNombre.setText("");
+        txt_buscar.setText("");
+        limpiarTabla();
+        
+        
+    }//GEN-LAST:event_btnlimpiarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -347,6 +492,8 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton btnVendedores;
     private javax.swing.JButton btnconsulta;
     private javax.swing.JButton btndesplegar;
+    private javax.swing.JButton btniralcarrito;
+    private javax.swing.JButton btnlimpiar;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton4;
@@ -356,6 +503,7 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jtableProducts;
@@ -365,6 +513,8 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JPanel pnlMenu;
     private javax.swing.JPanel pnlMenuDeslizable;
     private javax.swing.JPanel pnlVendedores;
+    private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txt_buscar;
+    private javax.swing.JTextField txtprueba;
     // End of variables declaration//GEN-END:variables
 }
