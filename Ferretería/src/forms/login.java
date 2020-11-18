@@ -163,6 +163,8 @@ public class login extends javax.swing.JFrame {
                     Menu m = new Menu();
                     m.setVisible(true);
                     this.dispose();
+                    
+                   
                 }
                 
             }else{
