@@ -8,6 +8,7 @@ package forms;
 import java.sql.Connection;
 import Clases.Conectar;
 import forms.CarritoCompras;
+import java.awt.Dimension;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -27,13 +28,12 @@ public class Menu extends javax.swing.JFrame {
     PreparedStatement ps = null;
     ResultSet rs;
     
+    double sub_total;
+    double iva;
     
     public static int filaseleccionada;
-    public static String nombre;
-    public static int codigo;
-    public static String desc;
-    public static int precioU;
-    public static int stock;
+    DefaultTableModel modelo;
+    
     public Menu() {
         initComponents();
         setLocationRelativeTo(null);
@@ -130,6 +130,7 @@ public class Menu extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Eroor al limpiar tabla","1Error¡",JOptionPane.ERROR);
         }
     }
+   
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -139,6 +140,10 @@ public class Menu extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        Carrito = new javax.swing.JDialog();
+        jPanel2 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tablacarrito = new javax.swing.JTable();
         jPanel1 = new javax.swing.JPanel();
         pnlMenu = new javax.swing.JPanel();
         jButton4 = new javax.swing.JButton();
@@ -162,13 +167,55 @@ public class Menu extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         btnconsulta = new javax.swing.JButton();
         btndesplegar = new javax.swing.JButton();
-        txtprueba = new javax.swing.JTextField();
+        txtcantidad = new javax.swing.JTextField();
         btniralcarrito = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
         txt_buscar = new javax.swing.JTextField();
         btnlimpiar = new javax.swing.JButton();
+        lbcantidad = new javax.swing.JLabel();
         pnlInventario = new javax.swing.JPanel();
         pnlAdministracion = new javax.swing.JPanel();
+
+        jPanel2.setMaximumSize(new java.awt.Dimension(903, 585));
+        jPanel2.setMinimumSize(new java.awt.Dimension(903, 585));
+
+        tablacarrito.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Código1", "Cantidad", "Precio Unitario", "Subtotal"
+            }
+        ));
+        jScrollPane2.setViewportView(tablacarrito);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 879, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(299, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout CarritoLayout = new javax.swing.GroupLayout(Carrito.getContentPane());
+        Carrito.getContentPane().setLayout(CarritoLayout);
+        CarritoLayout.setHorizontalGroup(
+            CarritoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        CarritoLayout.setVerticalGroup(
+            CarritoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -303,7 +350,7 @@ public class Menu extends javax.swing.JFrame {
             }
         });
         pnlCajeros.add(btndesplegar, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 460, -1, 50));
-        pnlCajeros.add(txtprueba, new org.netbeans.lib.awtextra.AbsoluteConstraints(870, 340, 220, -1));
+        pnlCajeros.add(txtcantidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(930, 350, 220, -1));
 
         btniralcarrito.setText("Ir al carrito");
         btniralcarrito.addActionListener(new java.awt.event.ActionListener() {
@@ -323,7 +370,10 @@ public class Menu extends javax.swing.JFrame {
                 btnlimpiarActionPerformed(evt);
             }
         });
-        pnlCajeros.add(btnlimpiar, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 470, -1, 40));
+        pnlCajeros.add(btnlimpiar, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 460, 80, 50));
+
+        lbcantidad.setText("Cantidad:");
+        pnlCajeros.add(lbcantidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(930, 310, -1, -1));
 
         pnlVendedores.add(pnlCajeros, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1240, 610));
 
@@ -408,34 +458,57 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_btndesplegarActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-       CarritoCompras c = new CarritoCompras();
-        int v = 0;
-        
-        
+           
+        filaseleccionada = jtableProducts.getSelectedRow();
+      
         try {
-                filaseleccionada = jtableProducts.getSelectedRow();
-               
-                if(filaseleccionada == -1){
-                    JOptionPane.showMessageDialog(null, "NO HA SELECCIONADO NINGUNA FILA!!!");
+                String codigo, articulo, descripcion,stock, precio, cantidad, importa;
+                double calc = 0.0, sub = 0.0, igv =0.0;
+                int cant = 0;
+                
+                if(filaseleccionada==-1){
+                    JOptionPane.showMessageDialog(null,"Debe seleccionar una fila de la tabla","Advertencia", JOptionPane.WARNING_MESSAGE);
                 }else{
-                    codigo = (int)jtableProducts.getValueAt(filaseleccionada, 0);
-                    nombre = (String) jtableProducts.getValueAt(filaseleccionada, 1);
-                    desc= (String) jtableProducts.getValueAt(filaseleccionada, 2);
-                    stock = (int)jtableProducts.getValueAt(filaseleccionada, 3);
-                    precioU = (int)jtableProducts.getValueAt(filaseleccionada, 4);
-                    txtprueba.setText(""+precioU);
+                    modelo = (DefaultTableModel) jtableProducts.getModel();
+                    codigo  = jtableProducts.getValueAt(filaseleccionada, 0).toString();
+                    articulo  = jtableProducts.getValueAt(filaseleccionada, 1).toString();
+                    descripcion  = jtableProducts.getValueAt(filaseleccionada, 2).toString();
+                    stock  = jtableProducts.getValueAt(filaseleccionada, 3).toString();
+                    precio = jtableProducts.getValueAt(filaseleccionada, 4).toString();
                     
+                    cantidad = txtcantidad.getText();
+                    
+                    if(!"".equals(txtcantidad.getText())){
+                    
+                    //Aquí vamos a realizar los cálculos 
+                    sub=(Double.parseDouble(precio)*Integer.parseInt(cantidad));
+                    importa = String.valueOf(sub);
+                    
+                    modelo = (DefaultTableModel) tablacarrito.getModel();
+                    String elementos[] = {codigo,cantidad,precio,importa};
+                    modelo.addRow(elementos);
+                    
+                    JOptionPane.showMessageDialog(null, "¡Elemento agregado correctamente al carrito de Compras!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    limpiarTabla();
+                    txtcantidad.setText("");
+                    }else{
+                        JOptionPane.showMessageDialog(null, "Ingrese una cantidad válida del producto", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                    }
                 }
+                
         } catch (Exception e) {
             
-            System.err.println(e);
         }
-       
+        
+        
        
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void btniralcarritoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btniralcarritoActionPerformed
-        // TODO add your handling code here:
+        Carrito.setSize(new Dimension(903,585));
+        Carrito.setVisible(true);
+        Carrito.setLocationRelativeTo(null);
+      
     }//GEN-LAST:event_btniralcarritoActionPerformed
 
     private void btnlimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnlimpiarActionPerformed
@@ -486,6 +559,7 @@ public class Menu extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JDialog Carrito;
     private javax.swing.JButton btnAdministracion;
     private javax.swing.JButton btnCajeros;
     private javax.swing.JButton btnInventario;
@@ -505,16 +579,20 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jtableProducts;
+    private javax.swing.JLabel lbcantidad;
     private javax.swing.JPanel pnlAdministracion;
     private javax.swing.JPanel pnlCajeros;
     private javax.swing.JPanel pnlInventario;
     private javax.swing.JPanel pnlMenu;
     private javax.swing.JPanel pnlMenuDeslizable;
     private javax.swing.JPanel pnlVendedores;
+    private javax.swing.JTable tablacarrito;
     private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txt_buscar;
-    private javax.swing.JTextField txtprueba;
+    private javax.swing.JTextField txtcantidad;
     // End of variables declaration//GEN-END:variables
 }
