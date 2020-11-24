@@ -9,11 +9,18 @@ import java.sql.Connection;
 import Clases.Conectar;
 import forms.CarritoCompras;
 import java.awt.Dimension;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.animation.Animation;
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -31,6 +38,9 @@ public class Menu extends javax.swing.JFrame {
     double sub_total;
     double iva;
     double total;
+    String cod,art;
+    int cm;
+    
     
     public static int filaseleccionada;
     DefaultTableModel modelo;
@@ -38,8 +48,41 @@ public class Menu extends javax.swing.JFrame {
     public Menu() {
         initComponents();
         setLocationRelativeTo(null);
+        num(txtced);
+        num(txttelefono);
         
- 
+    }
+    
+    public void dept(int d){
+        try {
+                DefaultTableModel modelo = new DefaultTableModel();
+                jtableProducts.setModel(modelo);
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto WHERE dept_fk="+d;
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                int cantidadColumna = rsMd.getColumnCount();
+                modelo.addColumn("Código");
+                modelo.addColumn("Artículo");
+                modelo.addColumn("Descripción");
+                modelo.addColumn("Stock");
+                modelo.addColumn("Precio");
+                while(rs.next()){
+                    Object[] fila = new Object[cantidadColumna];
+                    
+                    for(int i = 0; i<cantidadColumna; i++){
+                        fila[i] = rs.getObject(i+1);
+                    }
+                    modelo.addRow(fila);
+                }
+                
+                
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
     }
 
     public void BusquedaCodigo(){
@@ -119,7 +162,36 @@ public class Menu extends javax.swing.JFrame {
         }
     }
     
-    public void limpiarTabla(){
+    private DefaultListModel modelList(){
+        DefaultListModel lista = new DefaultListModel<>();
+        
+        lista.addElement("\n\nCédula: "+txtced.getText()+"\n\n");
+        lista.addElement("\n\nNombre: "+txtnombre_cliente.getText()+"\n\n");
+        lista.addElement("\n\nApellidos: "+txt_apellidos.getText()+"\n\n");
+        lista.addElement("\n\nCorreo electrónico: "+txtcorreo.getText()+"\n\n");
+        lista.addElement("\n\nNúmero Teléfono: "+txttelefono.getText()+"\n\n");
+        
+        return lista;
+    }
+    
+    public void num(JTextField a){
+        a.addKeyListener(new KeyAdapter() {
+        public void keyTyped(KeyEvent e){
+            char c = e.getKeyChar();
+            if(!Character.isDigit(c)&& c!= '.'){
+                e.consume();
+            }
+            if(c=='.'&& txtced.getText().contains(".")){
+                e.consume();
+            }
+        }
+        
+        });
+        
+    
+    }
+    
+    public void limpiarTodo(){
         try{
             DefaultTableModel modelo = new DefaultTableModel();
             jtableProducts.setModel(modelo);
@@ -129,10 +201,104 @@ public class Menu extends javax.swing.JFrame {
                 modelo.addColumn("Descripción");
                 modelo.addColumn("Stock");
                 modelo.addColumn("Precio");
+                txtNombre.setText("");
+                txt_buscar.setText("");
+                txtcantidad.setText("");
+                cmbdept.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hogar", "Jardinería", "Iluminación", "Construcción", "Plomería", "Pinturas" }));
+               
             
         }catch(Exception e){
             JOptionPane.showMessageDialog(null, "Eroor al limpiar tabla","1Error¡",JOptionPane.ERROR);
         }
+    }
+    
+    public void seleccion(){
+        filaseleccionada = jtableProducts.getSelectedRow();
+        try{
+        if(filaseleccionada==-1){
+                    JOptionPane.showMessageDialog(null,"Debe seleccionar una fila de la tabla","Advertencia", JOptionPane.WARNING_MESSAGE);
+                }else{
+            cod  = jtableProducts.getValueAt(filaseleccionada, 0).toString();
+            art  = jtableProducts.getValueAt(filaseleccionada, 1).toString();
+            txt_buscar.setText(cod);
+            txtNombre.setText(art);
+        }
+        
+        }catch(Exception e){
+                System.err.println(e);
+                }
+    }
+    
+    public void añadir(){
+        filaseleccionada = jtableProducts.getSelectedRow();
+        int ct;
+        double stockk;
+        
+        try {
+                String codigo, articulo, descripcion,stock, precio, cantidad, importa;
+                double calc = 0.0, sub = 0.0, igv =0.0;
+                int cant = 0;
+                
+                if(filaseleccionada==-1){
+                    JOptionPane.showMessageDialog(null,"Debe seleccionar una fila de la tabla","Advertencia", JOptionPane.WARNING_MESSAGE);
+                }else{
+                    modelo = (DefaultTableModel) jtableProducts.getModel();
+                    codigo  = jtableProducts.getValueAt(filaseleccionada, 0).toString();
+                    articulo  = jtableProducts.getValueAt(filaseleccionada, 1).toString();
+                    descripcion  = jtableProducts.getValueAt(filaseleccionada, 2).toString();
+                    stock  = jtableProducts.getValueAt(filaseleccionada, 3).toString();
+                    precio = jtableProducts.getValueAt(filaseleccionada, 4).toString();
+                    
+                    
+                    cantidad = txtcantidad.getText();
+                    
+                    if(!"".equals(txtcantidad.getText())){
+                    
+                     ct = (int)jtableProducts.getValueAt(filaseleccionada, 3);
+                     stockk = (Double.parseDouble(txtcantidad.getText()));
+                        
+                        if(stockk<=ct&&stockk>0){
+                    //Aquí vamos a realizar los cálculos 
+                    sub=(Double.parseDouble(precio)*Integer.parseInt(cantidad));
+                    importa = String.valueOf(sub);
+                    
+                    modelo = (DefaultTableModel) tablacarrito.getModel();
+                    String elementos[] = {articulo,cantidad,precio,importa};
+                    modelo.addRow(elementos);
+                    
+                    calc = (Double.parseDouble(precio) * Integer.parseInt(cantidad));
+                    sub_total = sub_total + calc;
+                    iva = sub_total * 0.13;
+                    igv = iva;
+                    total = sub_total+igv;
+                    
+                    txtTotal.setText(""+total);
+                    txtiva.setText(""+igv);
+                    txtsub.setText(""+sub_total);
+                    
+                    
+                    
+                    JOptionPane.showMessageDialog(null, "¡Elemento agregado correctamente al carrito de Compras!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    limpiarTodo();
+                        }else
+                        if(stockk==0||stockk<0){
+                             JOptionPane.showMessageDialog(null, "Debe ingresar una cantidad válida\n"+
+                                     "Igrese un nuevo valor", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                             txtcantidad.setText("");
+                        }else{
+                            JOptionPane.showMessageDialog(null, "La cantidad a llevar es insuficiente en nuestro inventario\n"+
+                                     "Igrese un nuevo valor", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                             txtcantidad.setText("");
+                        }
+                    }else{
+                        JOptionPane.showMessageDialog(null, "Ingrese una cantidad válida del producto", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
+                
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error de tipo: "+e, "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
     }
     
     public void colaborador(){
@@ -161,6 +327,24 @@ public class Menu extends javax.swing.JFrame {
         txtsub = new javax.swing.JTextField();
         txtiva = new javax.swing.JTextField();
         txtTotal = new javax.swing.JTextField();
+        btnContinuar = new javax.swing.JButton();
+        Cliente = new javax.swing.JDialog();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        txtnombre_cliente = new javax.swing.JTextField();
+        txt_apellidos = new javax.swing.JTextField();
+        txtcorreo = new javax.swing.JTextField();
+        txttelefono = new javax.swing.JTextField();
+        txtced = new javax.swing.JTextField();
+        btnguardar = new javax.swing.JButton();
+        btnlimpiarcliente = new javax.swing.JButton();
+        btncontinuar = new javax.swing.JButton();
+        Pedido = new javax.swing.JDialog();
         jPanel1 = new javax.swing.JPanel();
         pnlMenu = new javax.swing.JPanel();
         jButton4 = new javax.swing.JButton();
@@ -173,7 +357,7 @@ public class Menu extends javax.swing.JFrame {
         pnlVendedores = new javax.swing.JPanel();
         pnlCajeros = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        btncarrito = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         txtNombre = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -188,6 +372,8 @@ public class Menu extends javax.swing.JFrame {
         lbcantidad = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         jlbcolaborador = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        cmbdept = new javax.swing.JComboBox<>();
         pnlInventario = new javax.swing.JPanel();
         pnlAdministracion = new javax.swing.JPanel();
 
@@ -217,6 +403,13 @@ public class Menu extends javax.swing.JFrame {
 
         jLabel10.setText("Total:");
 
+        btnContinuar.setText("Continuar");
+        btnContinuar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnContinuarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -239,6 +432,10 @@ public class Menu extends javax.swing.JFrame {
                         .addComponent(btneliminarfilacarrito)
                         .addGap(30, 30, 30)))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnContinuar)
+                .addGap(32, 32, 32))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -258,7 +455,9 @@ public class Menu extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
                     .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(128, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnContinuar)
+                .addContainerGap(96, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout CarritoLayout = new javax.swing.GroupLayout(Carrito.getContentPane());
@@ -270,6 +469,175 @@ public class Menu extends javax.swing.JFrame {
         CarritoLayout.setVerticalGroup(
             CarritoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        Cliente.setPreferredSize(new java.awt.Dimension(903, 585));
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        jLabel4.setText("Detalles de Cliente");
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel5.setText("N° Cédula:");
+
+        jLabel6.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel6.setText("Nombre:");
+
+        jLabel11.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel11.setText("Apellidos:");
+
+        jLabel13.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel13.setText("Correo:");
+
+        jLabel14.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel14.setText("Teléfono:");
+
+        txtnombre_cliente.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        txtnombre_cliente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtnombre_clienteActionPerformed(evt);
+            }
+        });
+
+        txt_apellidos.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        txt_apellidos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_apellidosActionPerformed(evt);
+            }
+        });
+
+        txtcorreo.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        txtcorreo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtcorreoActionPerformed(evt);
+            }
+        });
+
+        txttelefono.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        txttelefono.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txttelefonoActionPerformed(evt);
+            }
+        });
+
+        txtced.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        txtced.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtcedActionPerformed(evt);
+            }
+        });
+
+        btnguardar.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        btnguardar.setText("Guardar");
+        btnguardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnguardarActionPerformed(evt);
+            }
+        });
+
+        btnlimpiarcliente.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        btnlimpiarcliente.setText("Limpiar");
+        btnlimpiarcliente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnlimpiarclienteActionPerformed(evt);
+            }
+        });
+
+        btncontinuar.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        btncontinuar.setText("Continuar");
+        btncontinuar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btncontinuarActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel11)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel13)
+                            .addComponent(jLabel14)
+                            .addComponent(jLabel5))
+                        .addGap(56, 56, 56)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txttelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtcorreo, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtced, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtnombre_cliente, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txt_apellidos, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(187, 187, 187)
+                        .addComponent(jLabel4))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(53, 53, 53)
+                        .addComponent(btnlimpiarcliente)
+                        .addGap(84, 84, 84)
+                        .addComponent(btnguardar)
+                        .addGap(100, 100, 100)
+                        .addComponent(btncontinuar)))
+                .addContainerGap(120, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel4)
+                .addGap(56, 56, 56)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(txtced, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(40, 40, 40)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(txtnombre_cliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(33, 33, 33)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(txt_apellidos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(35, 35, 35)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel13)
+                    .addComponent(txtcorreo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(35, 35, 35)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel14)
+                    .addComponent(txttelefono, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(45, 45, 45)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnlimpiarcliente)
+                    .addComponent(btnguardar)
+                    .addComponent(btncontinuar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(128, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout ClienteLayout = new javax.swing.GroupLayout(Cliente.getContentPane());
+        Cliente.getContentPane().setLayout(ClienteLayout);
+        ClienteLayout.setHorizontalGroup(
+            ClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ClienteLayout.createSequentialGroup()
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        ClienteLayout.setVerticalGroup(
+            ClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout PedidoLayout = new javax.swing.GroupLayout(Pedido.getContentPane());
+        Pedido.getContentPane().setLayout(PedidoLayout);
+        PedidoLayout.setHorizontalGroup(
+            PedidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1009, Short.MAX_VALUE)
+        );
+        PedidoLayout.setVerticalGroup(
+            PedidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 598, Short.MAX_VALUE)
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -342,21 +710,21 @@ public class Menu extends javax.swing.JFrame {
         jButton1.setContentAreaFilled(false);
         pnlCajeros.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 10, 180, 50));
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/CarritoCompras.png"))); // NOI18N
-        jButton2.setText("Añadir al carrito");
-        jButton2.setBorder(null);
-        jButton2.setBorderPainted(false);
-        jButton2.setContentAreaFilled(false);
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btncarrito.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/CarritoCompras.png"))); // NOI18N
+        btncarrito.setText("Añadir al carrito");
+        btncarrito.setBorder(null);
+        btncarrito.setBorderPainted(false);
+        btncarrito.setContentAreaFilled(false);
+        btncarrito.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btncarritoActionPerformed(evt);
             }
         });
-        pnlCajeros.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 20, 200, 50));
+        pnlCajeros.add(btncarrito, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 20, 200, 50));
 
         jLabel2.setText("Nombre:");
         pnlCajeros.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 130, -1, 20));
-        pnlCajeros.add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 130, 670, -1));
+        pnlCajeros.add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 130, 370, -1));
 
         jtableProducts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -372,6 +740,11 @@ public class Menu extends javax.swing.JFrame {
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        jtableProducts.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jtableProductsMouseClicked(evt);
             }
         });
         jScrollPane1.setViewportView(jtableProducts);
@@ -405,7 +778,7 @@ public class Menu extends javax.swing.JFrame {
 
         jLabel7.setText("Codigo:");
         pnlCajeros.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 100, -1, 20));
-        pnlCajeros.add(txt_buscar, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 100, 670, -1));
+        pnlCajeros.add(txt_buscar, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 100, 370, -1));
 
         btnlimpiar.setText("Limpiar");
         btnlimpiar.addActionListener(new java.awt.event.ActionListener() {
@@ -423,6 +796,17 @@ public class Menu extends javax.swing.JFrame {
 
         jlbcolaborador.setText("jLabel13");
         pnlCajeros.add(jlbcolaborador, new org.netbeans.lib.awtextra.AbsoluteConstraints(1130, 500, -1, -1));
+
+        jLabel3.setText("Departamento");
+        pnlCajeros.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 100, -1, -1));
+
+        cmbdept.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hogar", "Jardinería", "Iluminación", "Construcción", "Plomería", "Pinturas" }));
+        cmbdept.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbdeptActionPerformed(evt);
+            }
+        });
+        pnlCajeros.add(cmbdept, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 100, 190, -1));
 
         pnlVendedores.add(pnlCajeros, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1240, 610));
 
@@ -444,7 +828,7 @@ public class Menu extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 680, Short.MAX_VALUE)
+            .addGap(0, 706, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -510,80 +894,10 @@ public class Menu extends javax.swing.JFrame {
         
     }//GEN-LAST:event_btndesplegarActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-           
-        filaseleccionada = jtableProducts.getSelectedRow();
-        int ct;
-        double stockk;
-        
-        try {
-                String codigo, articulo, descripcion,stock, precio, cantidad, importa;
-                double calc = 0.0, sub = 0.0, igv =0.0;
-                int cant = 0;
-                
-                if(filaseleccionada==-1){
-                    JOptionPane.showMessageDialog(null,"Debe seleccionar una fila de la tabla","Advertencia", JOptionPane.WARNING_MESSAGE);
-                }else{
-                    modelo = (DefaultTableModel) jtableProducts.getModel();
-                    codigo  = jtableProducts.getValueAt(filaseleccionada, 0).toString();
-                    articulo  = jtableProducts.getValueAt(filaseleccionada, 1).toString();
-                    descripcion  = jtableProducts.getValueAt(filaseleccionada, 2).toString();
-                    stock  = jtableProducts.getValueAt(filaseleccionada, 3).toString();
-                    precio = jtableProducts.getValueAt(filaseleccionada, 4).toString();
-                    
-                    cantidad = txtcantidad.getText();
-                    
-                    if(!"".equals(txtcantidad.getText())){
-                    
-                     ct = (int)jtableProducts.getValueAt(filaseleccionada, 3);
-                     stockk = (Double.parseDouble(txtcantidad.getText()));
-                        
-                        if(stockk<=ct&&stockk>0){
-                    //Aquí vamos a realizar los cálculos 
-                    sub=(Double.parseDouble(precio)*Integer.parseInt(cantidad));
-                    importa = String.valueOf(sub);
-                    
-                    modelo = (DefaultTableModel) tablacarrito.getModel();
-                    String elementos[] = {articulo,cantidad,precio,importa};
-                    modelo.addRow(elementos);
-                    
-                    calc = (Double.parseDouble(precio) * Integer.parseInt(cantidad));
-                    sub_total = sub_total + calc;
-                    iva = sub_total * 0.13;
-                    igv = iva;
-                    total = sub_total+igv;
-                    
-                    txtTotal.setText(""+total);
-                    txtiva.setText(""+igv);
-                    txtsub.setText(""+sub_total);
-                    
-                    JOptionPane.showMessageDialog(null, "¡Elemento agregado correctamente al carrito de Compras!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                    limpiarTabla();
-                    txtcantidad.setText("");
-                    txtNombre.setText("");
-                    txt_buscar.setText("");
-                        }else
-                        if(stockk==0||stockk<0){
-                             JOptionPane.showMessageDialog(null, "Debe ingresar una cantidad válida\n"+
-                                     "Igrese un nuevo valor", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                             txtcantidad.setText("");
-                        }else{
-                            JOptionPane.showMessageDialog(null, "La cantidad a llevar es insuficiente en nuestro inventario\n"+
-                                     "Igrese un nuevo valor", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                             txtcantidad.setText("");
-                        }
-                    }else{
-                        JOptionPane.showMessageDialog(null, "Ingrese una cantidad válida del producto", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                    }
-                }
-                
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error de tipo: "+e, "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        
-        
-       
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void btncarritoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncarritoActionPerformed
+         
+        añadir();
+    }//GEN-LAST:event_btncarritoActionPerformed
 
     private void btniralcarritoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btniralcarritoActionPerformed
         Carrito.setSize(new Dimension(903,585));
@@ -593,11 +907,8 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_btniralcarritoActionPerformed
 
     private void btnlimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnlimpiarActionPerformed
-        
-        txtNombre.setText("");
-        txt_buscar.setText("");
-        txtcantidad.setText("");
-        limpiarTabla();
+       
+        limpiarTodo();
         
         
     }//GEN-LAST:event_btnlimpiarActionPerformed
@@ -644,6 +955,140 @@ public class Menu extends javax.swing.JFrame {
         
     }//GEN-LAST:event_btneliminarfilacarritoActionPerformed
 
+    private void cmbdeptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbdeptActionPerformed
+
+        
+        String op = (String) cmbdept.getSelectedItem();
+        int d;
+        
+        if(null != op)switch (op) {
+            case "Hogar":
+                d=1;
+                dept(d);
+                break;
+            case "Jardinería":
+                d=2;
+                dept(d);
+                break;
+            case "Iluminación":
+                d=3;
+                dept(d);
+                break;
+            case "Construcción":
+                d=6;
+                dept(d);
+                break;
+            case "Plomería":
+                d=7;
+                dept(d);
+                break;
+            case "Pinturas":
+                d=8;
+                dept(d);
+                break;
+            default:
+                break;
+        }
+        
+    }//GEN-LAST:event_cmbdeptActionPerformed
+
+    private void jtableProductsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jtableProductsMouseClicked
+        seleccion();
+    }//GEN-LAST:event_jtableProductsMouseClicked
+
+    private void btnContinuarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnContinuarActionPerformed
+        
+        Carrito.dispose();
+        Cliente.setSize(new Dimension(574,507));
+        Cliente.setVisible(true);
+        Cliente.setLocationRelativeTo(null);
+        
+    }//GEN-LAST:event_btnContinuarActionPerformed
+
+    private void txtcedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtcedActionPerformed
+
+        txtced.transferFocus();
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtcedActionPerformed
+
+    private void txtnombre_clienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtnombre_clienteActionPerformed
+
+        txtnombre_cliente.transferFocus();
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtnombre_clienteActionPerformed
+
+    private void txt_apellidosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_apellidosActionPerformed
+
+        txt_apellidos.transferFocus();
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_apellidosActionPerformed
+
+    private void txtcorreoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtcorreoActionPerformed
+
+        txtcorreo.transferFocus();
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtcorreoActionPerformed
+
+    private void txttelefonoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txttelefonoActionPerformed
+
+        txttelefono.transferFocus();
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txttelefonoActionPerformed
+
+    private void btnguardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnguardarActionPerformed
+       
+        String nombre, apellidos, correo;
+        int cedula, telefono, n;
+        String SQL;
+        
+        nombre = txtnombre_cliente.getText();
+        apellidos = txt_apellidos.getText();
+        correo = txtcorreo.getText();
+        cedula = Integer.parseInt(txtced.getText());
+        telefono = Integer.parseInt(txttelefono.getText());
+        
+        SQL = "INSERT INTO tb_cliente (Cédula, Nombre_cliente, Apellidos, Correo, Telefono) VALUES (?,?,?,?,?)";
+        try {
+            PreparedStatement st = con.prepareStatement(SQL);
+            st.setInt(1, cedula);
+            st.setString(2, nombre);
+            st.setString(3, apellidos);
+            st.setString(4, correo);
+            st.setInt(5, telefono);
+            
+            n = st.executeUpdate();
+            
+            if(n>0){
+                JOptionPane.showMessageDialog(null, "Cliente guardado con éxito");
+                txtced.setText("");
+                txtnombre_cliente.setText("");
+                txt_apellidos.setText("");
+                txtcorreo.setText("");
+                txttelefono.setText("");
+                
+            }
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }//GEN-LAST:event_btnguardarActionPerformed
+
+    private void btnlimpiarclienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnlimpiarclienteActionPerformed
+
+            txtced.setText("");
+                txtnombre_cliente.setText("");
+                txt_apellidos.setText("");
+                txtcorreo.setText("");
+                txttelefono.setText("");
+
+    }//GEN-LAST:event_btnlimpiarclienteActionPerformed
+
+    private void btncontinuarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncontinuarActionPerformed
+        
+    }//GEN-LAST:event_btncontinuarActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -684,27 +1129,42 @@ public class Menu extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JDialog Carrito;
+    private javax.swing.JDialog Cliente;
+    private javax.swing.JDialog Pedido;
     private javax.swing.JButton btnAdministracion;
     private javax.swing.JButton btnCajeros;
+    private javax.swing.JButton btnContinuar;
     private javax.swing.JButton btnInventario;
     private javax.swing.JButton btnVendedores;
+    private javax.swing.JButton btncarrito;
     private javax.swing.JButton btnconsulta;
+    private javax.swing.JButton btncontinuar;
     private javax.swing.JButton btndesplegar;
     private javax.swing.JButton btneliminarfilacarrito;
+    private javax.swing.JButton btnguardar;
     private javax.swing.JButton btniralcarrito;
     private javax.swing.JButton btnlimpiar;
+    private javax.swing.JButton btnlimpiarcliente;
+    private javax.swing.JComboBox<String> cmbdept;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel jlbcolaborador;
@@ -719,9 +1179,14 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JTable tablacarrito;
     private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txtTotal;
+    private javax.swing.JTextField txt_apellidos;
     private javax.swing.JTextField txt_buscar;
     private javax.swing.JTextField txtcantidad;
+    private javax.swing.JTextField txtced;
+    private javax.swing.JTextField txtcorreo;
     private javax.swing.JTextField txtiva;
+    private javax.swing.JTextField txtnombre_cliente;
     private javax.swing.JTextField txtsub;
+    private javax.swing.JTextField txttelefono;
     // End of variables declaration//GEN-END:variables
 }

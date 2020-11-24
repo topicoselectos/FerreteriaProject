@@ -6,12 +6,15 @@
 package forms;
 
 import Clases.Conectar;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 /**
  *
@@ -27,9 +30,27 @@ public class login extends javax.swing.JFrame {
         initComponents();
         this.setResizable(false);
         setLocationRelativeTo(this);  
+        num(txtusuario);
     
     }
 
+    
+    public void num(JTextField a){
+        a.addKeyListener(new KeyAdapter() {
+        public void keyTyped(KeyEvent e){
+            char c = e.getKeyChar();
+            if(!Character.isDigit(c)&& c!= '.'){
+                e.consume();
+            }
+            if(c=='.'&& txtusuario.getText().contains(".")){
+                e.consume();
+            }
+        }
+        
+        });
+        
+    
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -62,8 +83,18 @@ public class login extends javax.swing.JFrame {
         jLabel3.setText("Contraseña: ");
 
         txtusuario.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
+        txtusuario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtusuarioActionPerformed(evt);
+            }
+        });
 
         pswd.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
+        pswd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pswdActionPerformed(evt);
+            }
+        });
 
         btnlogin.setFont(new java.awt.Font("Times New Roman", 1, 24)); // NOI18N
         btnlogin.setText("CONTINUAR");
@@ -139,9 +170,23 @@ public class login extends javax.swing.JFrame {
 
     private void btnloginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnloginActionPerformed
 
+       btnlogin.transferFocus();
         ValidarUsuario();
+        
+        
         // TODO add your handling code here:
     }//GEN-LAST:event_btnloginActionPerformed
+
+    private void txtusuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtusuarioActionPerformed
+        txtusuario.transferFocus();
+        
+        
+    }//GEN-LAST:event_txtusuarioActionPerformed
+
+    private void pswdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pswdActionPerformed
+        
+        pswd.transferFocus();
+    }//GEN-LAST:event_pswdActionPerformed
 
     
     public void ValidarUsuario(){
