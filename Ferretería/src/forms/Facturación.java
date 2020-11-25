@@ -63,7 +63,7 @@ public class Facturación extends javax.swing.JFrame {
 
             },
             new String [] {
-                "N° Factura", "Fecha", "Empleado", "Código Producto", "Total"
+                "N° Factura", "Código Producto", "Total", "Fecha"
             }
         ));
         jScrollPane1.setViewportView(tablafactura);
@@ -110,17 +110,17 @@ public class Facturación extends javax.swing.JFrame {
         tablafactura.setModel(model);
         try {
                 
-                String SQL = "SELECT idtb_facura, fecha, empleado_fk, producto_fk, Total FROM tb_factura WHERE idtb_facura=" + fact;
+                String SQL = "SELECT idtb_facura, producto_fk, Total, fecha FROM tb_factura WHERE idtb_facura=" + fact;
                 
                 ps = con.prepareStatement(SQL);
                 rs = ps.executeQuery();
                 
                 
                 model.addColumn("N° Factura");
-                model.addColumn("Fecha");
-                model.addColumn("ID Empleado");
                 model.addColumn("Código Producto");
-                model.addColumn("Total Pagado");
+                model.addColumn("Total pagado");
+                model.addColumn("Fecha");
+                
                 ResultSetMetaData rsMd = rs.getMetaData();
                 int cantidadColumna = rsMd.getColumnCount();
                 
