@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
@@ -30,10 +31,11 @@ public class login extends javax.swing.JFrame {
         initComponents();
         this.setResizable(false);
         setLocationRelativeTo(this);  
-        num(txtusuario);
     
     }
 
+    
+    
     
     public void num(JTextField a){
         a.addKeyListener(new KeyAdapter() {
@@ -119,12 +121,12 @@ public class login extends javax.swing.JFrame {
                             .addComponent(jLabel3))
                         .addGap(18, 18, 18)
                         .addGroup(loginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtusuario, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(loginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(pswd, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, loginLayout.createSequentialGroup()
                                     .addComponent(btnlogin)
-                                    .addGap(15, 15, 15)))
-                            .addComponent(txtusuario, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addGap(15, 15, 15)))))
                     .addGroup(loginLayout.createSequentialGroup()
                         .addGap(226, 226, 226)
                         .addComponent(jLabel1)))
@@ -189,13 +191,14 @@ public class login extends javax.swing.JFrame {
     }//GEN-LAST:event_pswdActionPerformed
 
     
+   
     public void ValidarUsuario(){
         
         
         int resultado  = 0; 
         String pass= String.valueOf(pswd.getPassword());
         String usuario = txtusuario.getText();
-        String SQL = "SELECT * FROM tb_empleado where Cedula='"+usuario+"' AND Contraseña='"+pass+"'";
+        String SQL = "SELECT * FROM tb_empleado where Nom_usuario='"+usuario+"' AND Contraseña='"+pass+"'";
         
         try{
             Statement st = con.createStatement();
@@ -205,15 +208,15 @@ public class login extends javax.swing.JFrame {
                 resultado = 1;
                 
                 if(resultado == 1){
-                    Menu m = new Menu();
-                    m.setVisible(true);
-                    this.dispose();
                     
-                   
+                     Menu m = new Menu();
+                     m.setVisible(true);
+                     Menu.lbusuario.setText(txtusuario.getText());
+                     this.dispose();
                 }
                 
             }else{
-                JOptionPane.showMessageDialog(null, "Error de acceso....");
+                JOptionPane.showMessageDialog(null, "¡Por favor ingrese sus datos correctamente!", "Intente de nuevo", JOptionPane.WARNING_MESSAGE);
                 txtusuario.setText("");
                 pswd.setText("");
             }
@@ -270,6 +273,6 @@ public class login extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel login;
     private javax.swing.JPasswordField pswd;
-    private javax.swing.JTextField txtusuario;
+    public static javax.swing.JTextField txtusuario;
     // End of variables declaration//GEN-END:variables
 }
