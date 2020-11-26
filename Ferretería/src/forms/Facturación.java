@@ -20,7 +20,7 @@ import javax.swing.table.DefaultTableModel;
 public class Facturación extends javax.swing.JFrame {
 
     Conectar co = new Conectar();   
-        Connection con = co.conexion();
+    Connection con = co.conexion();
     PreparedStatement ps = null;
         ResultSet rs;
     

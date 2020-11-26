@@ -5,6 +5,7 @@
  */
 package Clases;
 
+import forms.Menu;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.sql.Connection;
@@ -21,19 +22,20 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author e09am
  */
+
+
 public class Metodos {
         Conectar co = new Conectar();   
         Connection con = co.conexion();
         PreparedStatement ps = null;
         ResultSet rs;
          public static int filasel;
-        
     
     public void BusquedaCodigo(String cod, String nom, DefaultTableModel model){
          
          try {
                 
-                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto WHERE idtb_producto=" + cod;
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, stock, Precio FROM tb_producto WHERE idtb_producto=" + cod;
                 
                 ps = con.prepareStatement(SQL);
                 rs = ps.executeQuery();
@@ -66,7 +68,7 @@ public class Metodos {
     {
         
         try {
-                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto WHERE Nombre LIKE '%" + nom+"%'";
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, stock, Precio FROM tb_producto WHERE Nombre LIKE '%" + nom+"%'";
                 
                 ps = con.prepareStatement(SQL);
                 rs = ps.executeQuery();
@@ -110,6 +112,7 @@ public class Metodos {
         
     
     }
+        
         
         
      

@@ -9,6 +9,7 @@ import Clases.Metodos;
 import java.sql.Connection;
 import Clases.Conectar;
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.sql.PreparedStatement;
@@ -38,14 +39,18 @@ public class Menu extends javax.swing.JFrame {
     PreparedStatement ps = null;
     ResultSet rs;
     
+    //variables de cálculo
     double sub_total;
     double iva;
     double total;
-    String cod,art, nombb, cliente;
+    String cod,art,nombb, cliente;
     int cm;
+    
     Metodos m = new Metodos();
-
+    
+    //variables de factura
     String cc, nomfact, contfact, apfact,f;
+    
     
     public static int filaseleccionada;
     DefaultTableModel modelo;
@@ -55,7 +60,7 @@ public class Menu extends javax.swing.JFrame {
     public Menu() {
         initComponents();
         setLocationRelativeTo(null);
-        
+        fecha();
         num(txt_buscar);
         num(txtced);
         num(txtcantidad);
@@ -65,6 +70,13 @@ public class Menu extends javax.swing.JFrame {
         
     }
 
+    public void fecha(){
+         
+         Date fecha = new Date();
+         SimpleDateFormat formatoFecha = new SimpleDateFormat("dd-MM-YYYY");
+         lblfecha.setText(formatoFecha.format(fecha));
+         
+    }
     
     public void num(JTextField a){
         a.addKeyListener(new KeyAdapter() {
@@ -92,30 +104,26 @@ public class Menu extends javax.swing.JFrame {
         
     }
     
-    public void facturacion(){
-        tblfact();
-        txtnmclfact.setText(nomfact);
-        txtapcltfact.setText(apfact);
-        txtcontactcltfact3.setText(contfact);
-        txtsubfact.setText(txtsub.getText());
-        txtivafact.setText(txtiva.getText());
-        txttotalfact.setText(txtTotal.getText());
-        
-    }
-    
-    public void fecha(){
-         
-         Date fecha = new Date();
-         SimpleDateFormat formatoFecha = new SimpleDateFormat("dd-MM-YYYY");
-         lblfecha.setText(formatoFecha.format(fecha));
-         
+    public void consultas(){
+        if("".equals(txtNombre.getText())&&"".equals(txt_buscar.getText())){
+               JOptionPane.showMessageDialog(null, "POR FAVOR INGRESE DATOS VÁLIDOS A BUSCAR");
+        }else
+        if("".equals(txtNombre.getText())){
+            cod = txt_buscar.getText();
+            nombb = txtNombre.getText();
+            m.BusquedaCodigo(cod, nombb, (DefaultTableModel) jtableProducts.getModel());
+            
+        }else{
+            cod = txtNombre.getText();
+            m.BusquedaNombre(cod, (DefaultTableModel) jtableProducts.getModel());
+        }
     }
     
     public void dept(int d){
         try {
                 DefaultTableModel modelo = new DefaultTableModel();
                 jtableProducts.setModel(modelo);
-                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto WHERE dept_fk="+d;
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, stock, Precio FROM tb_producto WHERE dept_fk="+d;
                 
                 ps = con.prepareStatement(SQL);
                 rs = ps.executeQuery();
@@ -142,189 +150,43 @@ public class Menu extends javax.swing.JFrame {
             System.err.println(e.toString());
         }
     }
-   
-    public void elimfact(){
-         double x = 0.0, impuesto = 0.0, nuevototal= 0.0, importa = 0.0, precioactual;
-        int respuesta, fila;
+     
+    public void mostrardedept(){
         
-        try {
-               filaseleccionada = tblpedido.getSelectedRow();
-               if(filaseleccionada==-1){
-                   JOptionPane.showMessageDialog(null, "Por favor seleccione el producto que desea eliminar", "Intente de nuevo", JOptionPane.WARNING_MESSAGE);
-               }else{
-                   respuesta = JOptionPane.showConfirmDialog(null, "¿Desea eliminar este producto de su carrito?\n" +
-                           "De ser así deberá agregar de nuevo el producto", "Acción", JOptionPane.YES_NO_OPTION);
-                   if(respuesta == JOptionPane.YES_OPTION){
-                       
-                       model = (DefaultTableModel)tblpedido.getModel();
-                      model.removeRow(filaseleccionada);
-                      
-                       importa = Double.parseDouble(tablacarrito.getValueAt(filaseleccionada, 4).toString());
-                       precioactual = Double.parseDouble(txtsub.getText())-importa;
-                       sub_total = precioactual;
-                       txtsub.setText(""+sub_total);
-                       
-                       impuesto = sub_total * 0.13;
-                       txtiva.setText(""+impuesto);
-                       
-                       nuevototal = sub_total+impuesto;
-                       
-                      txtTotal.setText(""+nuevototal);
-                      
-                      modelo = (DefaultTableModel)tablacarrito.getModel();
-                      modelo.removeRow(filaseleccionada);
-                      
-                   }
-               }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "No se ha realizado la eliminación del producto", "Verifique", JOptionPane.ERROR_MESSAGE);
-        }
+        String op = (String) cmbdept.getSelectedItem();
+        int d;
         
-    }
-    
-    public void tblfact(){
-        
-        String cod, articulo, cant,preciou, subproduct;
-        DefaultTableModel model = new DefaultTableModel();
-        
-        try {
-            model = (DefaultTableModel) tblfact.getModel();
-            
-            
-            for (int i = 0; i < 1000; i++) {
-                
-                 cod = tablacarrito.getValueAt(i, 0).toString();
-                 articulo = tablacarrito.getValueAt(i, 1).toString();
-                 cant = tablacarrito.getValueAt(i, 2).toString();
-                 preciou = tablacarrito.getValueAt(i, 3).toString();
-                 subproduct = tablacarrito.getValueAt(i, 4).toString();
-                 String f[] = {cod,articulo,cant, preciou,subproduct};
-                 model.addRow(f);
-            }
-                
-        } catch (Exception e) {
-            
+        if(null != op)switch (op) {
+            case "Hogar":
+                d=1;
+                dept(d);
+                break;
+            case "Jardinería":
+                d=2;
+                dept(d);
+                break;
+            case "Iluminación":
+                d=3;
+                dept(d);
+                break;
+            case "Construcción":
+                d=6;
+                dept(d);
+                break;
+            case "Plomería":
+                d=7;
+                dept(d);
+                break;
+            case "Pinturas":
+                d=8;
+                dept(d);
+                break;
+            default:
+                break;
         }
     }
-    
-    public void pedido(){
-        
-               
-        String cod, cant,emp, clt;
-        DefaultTableModel model = new DefaultTableModel();
-        
-        try {
-            model = (DefaultTableModel) tblpedido.getModel();
-            
-            
-            for (int i = 0; i < 1000; i++) {
-                
-                 cod = tablacarrito.getValueAt(i, 0).toString();
-                 cant = tablacarrito.getValueAt(i, 2).toString();
-                 String f[] = {cod,cant};
-                 model.addRow(f);
-            }
-                
-        } catch (Exception e) {
-            
-        }
-        
-    }
-    
-    public void cargaempleado(){
-        
-        String emp = lbusuario.getText();
-        
-        try {
-                String SQL = "SELECT idtb_empleado, Nombre, Apellido_1 FROM tb_empleado WHERE nom_usuario='"+emp+"'";
-                
-                ps = con.prepareStatement(SQL);
-                rs = ps.executeQuery();
-                
-                ResultSetMetaData rsMd = rs.getMetaData();
-                while(rs.next()){
-                    Object[] fila = new Object[50];
-                    
-                    for(int i = 0; i<50; i++){
-                        fila[i] = rs.getObject(i+1);
-                        
-                    txtiduser.setText(""+fila[0]);
-                    txtpusuario.setText(""+fila[1]+" "+fila[2]);
-                    }
-                }
-                
-                
-        } catch (SQLException e) {
-            
-        } 
-    }
-    public void cargacliente(){
-        
-        String cliente = cc;
-        
-        try {
-                String SQL = "SELECT idtb_cliente, Nombre_cliente, Apellidos FROM tb_cliente WHERE Cédula="+cliente;
-                
-                ps = con.prepareStatement(SQL);
-                rs = ps.executeQuery();
-                
-                ResultSetMetaData rsMd = rs.getMetaData();
-                while(rs.next()){
-                    Object[] fila = new Object[50];
-                    
-                    for(int i = 0; i<50; i++){
-                        fila[i] = rs.getObject(i+1);
-                        
-                    txtidcliente.setText(""+fila[0]);
-                    txtpcliente.setText(""+fila[1]+" "+fila[2]);
-                    }
-                }
-                
-                
-        } catch (SQLException e) {
-            
-        }
-    }
-    
-    public void limpiarTodo(){
-        try{
-            DefaultTableModel modelo = new DefaultTableModel();
-            jtableProducts.setModel(modelo);
-            modelo.setRowCount(0);
-            modelo.addColumn("Código");
-                modelo.addColumn("Artículo");
-                modelo.addColumn("Descripción");
-                modelo.addColumn("Stock");
-                modelo.addColumn("Precio");
-                txtNombre.setText("");
-                txt_buscar.setText("");
-                txtcantidad.setText("");
-                cmbdept.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hogar", "Jardinería", "Iluminación", "Construcción", "Plomería", "Pinturas" }));
-               
-            
-        }catch(Exception e){
-            JOptionPane.showMessageDialog(null, "Eroor al limpiar tabla","1Error¡",JOptionPane.ERROR);
-        }
-    }
-    
-    public void seleccion(){
-        filaseleccionada = jtableProducts.getSelectedRow();
-        try{
-        if(filaseleccionada==-1){
-                    JOptionPane.showMessageDialog(null,"Debe seleccionar una fila de la tabla","Advertencia", JOptionPane.WARNING_MESSAGE);
-                }else{
-            cod  = jtableProducts.getValueAt(filaseleccionada, 0).toString();
-            art  = jtableProducts.getValueAt(filaseleccionada, 1).toString();
-            txt_buscar.setText(cod);
-            txtNombre.setText(art);
-        }
-        
-        }catch(Exception e){
-                System.err.println(e);
-                }
-    }
-    
-    public void añadir(){
+     
+    public void añadiralcarrito(){
         filaseleccionada = jtableProducts.getSelectedRow();
         int ct;
         double stockk;
@@ -395,11 +257,371 @@ public class Menu extends javax.swing.JFrame {
         }
         
     }
+     
+    public void eliminarfiladelcarrito(){
+         double x = 0.0, impuesto = 0.0, nuevototal= 0.0, importa = 0.0, precioactual;
+        int respuesta, fila;
+        
+        try {
+               filaseleccionada = tablacarrito.getSelectedRow();
+               if(filaseleccionada==-1){
+                   JOptionPane.showMessageDialog(null, "Por favor seleccione el producto que desea eliminar", "Intente de nuevo", JOptionPane.WARNING_MESSAGE);
+               }else{
+                   respuesta = JOptionPane.showConfirmDialog(null, "¿Desea eliminar este producto de su carrito?\n" +
+                           "De ser así deberá agregar de nuevo el producto", "Acción", JOptionPane.YES_NO_OPTION);
+                   
+                   if(respuesta == JOptionPane.YES_OPTION){
+                       importa = Double.parseDouble(tablacarrito.getValueAt(filaseleccionada, 4).toString());
+                       precioactual = Double.parseDouble(txtsub.getText())-importa;
+                       sub_total = precioactual;
+                       txtsub.setText(""+sub_total);
+                       
+                       impuesto = sub_total * 0.13;
+                       txtiva.setText(""+impuesto);
+                       
+                       nuevototal = sub_total+impuesto;
+                       
+                      txtTotal.setText(""+nuevototal);
+                      
+                      modelo = (DefaultTableModel)tablacarrito.getModel();
+                      modelo.removeRow(filaseleccionada);
+                      
+                   }
+               }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "No se ha realizado la eliminación del producto", "Verifique", JOptionPane.ERROR_MESSAGE);
+        }
+        
+    }
     
-    public void colaborador(){
-        int res = 0;
-        String colaborador;
-        String SQL = "SELECT NOMBRE, Apellido_1 AS 'Apellido'";
+    public void facturacion(){
+        tblfact();
+        txtnmclfact.setText(nomfact);
+        txtapcltfact.setText(apfact);
+        txtcontactcltfact3.setText(contfact);
+        txtsubfact.setText(txtsub.getText());
+        txtivafact.setText(txtiva.getText());
+        txttotalfact.setText(txtTotal.getText());
+        
+    }
+    
+    public void elimdefact(){
+         double x = 0.0, impuesto = 0.0, nuevototal= 0.0, importa = 0.0, precioactual;
+        int respuesta, fila;
+        
+        try {
+               filaseleccionada = tblpedido.getSelectedRow();
+               if(filaseleccionada==-1){
+                   JOptionPane.showMessageDialog(null, "Por favor seleccione el producto que desea eliminar", "Intente de nuevo", JOptionPane.WARNING_MESSAGE);
+               }else{
+                   respuesta = JOptionPane.showConfirmDialog(null, "¿Desea eliminar este producto de su carrito?\n" +
+                           "De ser así deberá agregar de nuevo el producto", "Acción", JOptionPane.YES_NO_OPTION);
+                   if(respuesta == JOptionPane.YES_OPTION){
+                       
+                       model = (DefaultTableModel)tblpedido.getModel();
+                      model.removeRow(filaseleccionada);
+                      
+                       importa = Double.parseDouble(tablacarrito.getValueAt(filaseleccionada, 4).toString());
+                       precioactual = Double.parseDouble(txtsub.getText())-importa;
+                       sub_total = precioactual;
+                       txtsub.setText(""+sub_total);
+                       
+                       impuesto = sub_total * 0.13;
+                       txtiva.setText(""+impuesto);
+                       
+                       nuevototal = sub_total+impuesto;
+                       
+                      txtTotal.setText(""+nuevototal);
+                      
+                      modelo = (DefaultTableModel)tablacarrito.getModel();
+                      modelo.removeRow(filaseleccionada);
+                      
+                   }
+               }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "No se ha realizado la eliminación del producto", "Verifique", JOptionPane.ERROR_MESSAGE);
+        }
+        
+    }
+    
+    public void tblfact(){
+        
+        String cod, articulo, cant,preciou, subproduct;
+        DefaultTableModel model = new DefaultTableModel();
+        
+        try {
+            model = (DefaultTableModel) tblfact.getModel();
+            
+            
+            for (int i = 0; i < 1000; i++) {
+                
+                 cod = tablacarrito.getValueAt(i, 0).toString();
+                 articulo = tablacarrito.getValueAt(i, 1).toString();
+                 cant = tablacarrito.getValueAt(i, 2).toString();
+                 preciou = tablacarrito.getValueAt(i, 3).toString();
+                 subproduct = tablacarrito.getValueAt(i, 4).toString();
+                 String f[] = {cod,articulo,cant, preciou,subproduct};
+                 model.addRow(f);
+            }
+                
+        } catch (Exception e) {
+            
+        }
+    }
+    
+    public void facturar(){
+                 
+        int productofk, empleadofk, clientefk, cantidad,n, idfact;
+        double sub, total, impuesto;
+        String prfk, empfk, clfk;
+        
+        String SQL;
+        
+         SQL = "INSERT INTO tb_factura (idtb_facura, fecha, Subtotal, Impuesto, Total, cliente_fk) VALUES (?,?,?,?,?,?)";
+          
+         try{
+          
+          idfact = Integer.parseInt(txtnumpedido.getText());
+          sub = Double.parseDouble(txtsub.getText());
+          total = Double.parseDouble(txtTotal.getText());
+          impuesto = Double.parseDouble(txtiva.getText());
+          clientefk = Integer.parseInt(txtidcliente.getText());
+            
+             PreparedStatement st = con.prepareStatement(SQL);
+             st.setInt(1, idfact);
+             st.setString(2, lblfecha.getText());
+             st.setDouble(3, sub);
+             st.setDouble(4, impuesto);
+             st.setDouble(5, total);
+             st.setInt(6, clientefk);
+             
+             n = st.executeUpdate();
+             
+             if(n>0){
+                
+                JOptionPane.showMessageDialog(null, "Pedido guardado con éxito");
+            }
+         
+        } catch (SQLException e) {
+            Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+    
+    public void pedido(){
+        
+               
+        String cod, cant,emp, clt;
+        DefaultTableModel model = new DefaultTableModel();
+        
+        try {
+            model = (DefaultTableModel) tblpedido.getModel();
+            
+            
+            for (int i = 0; i < 1000; i++) {
+                
+                 cod = tablacarrito.getValueAt(i, 0).toString();
+                 cant = tablacarrito.getValueAt(i, 2).toString();
+                 String f[] = {cod,cant};
+                 model.addRow(f);
+            }
+                
+        } catch (Exception e) {
+            
+        }
+        
+    }
+    
+    public void pagar(){
+        
+         double total, pago, cambio;
+        
+        total = Double.parseDouble(txttotalfact.getText());
+        pago= Double.parseDouble(txtpaga.getText());
+
+        if(pago>=total){
+            
+            cambio = pago-total;
+            JOptionPane.showMessageDialog(null, "¡Gracias por su compra! \n"+ nomfact+
+                    ", ha sido un gusto atenderte", "Gracias", JOptionPane.INFORMATION_MESSAGE);
+            txtcambio.setText(""+cambio);
+            
+        }else{
+            JOptionPane.showMessageDialog(null, "Su pago debe ser mayor o igual al total de su factura\n"+
+                    "   Intente de nuevo    ", "Intente de nuevo", JOptionPane.WARNING_MESSAGE);
+            txtpaga.setText("");
+        }
+    }
+    
+    public void cargaempleado(){
+        
+        String emp = lbusuario.getText();
+        
+        try {
+                String SQL = "SELECT idtb_empleado, Nombre, Apellido_1 FROM tb_empleado WHERE nom_usuario='"+emp+"'";
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                while(rs.next()){
+                    Object[] fila = new Object[50];
+                    
+                    for(int i = 0; i<50; i++){
+                        fila[i] = rs.getObject(i+1);
+                        
+                    txtiduser.setText(""+fila[0]);
+                    txtpusuario.setText(""+fila[1]+" "+fila[2]);
+                    }
+                }
+                
+                
+        } catch (SQLException e) {
+            
+        } 
+    }
+    
+    public void cargacliente(){
+        
+        String cliente = cc;
+        
+        try {
+                String SQL = "SELECT idtb_cliente, Nombre_cliente, Apellidos FROM tb_cliente WHERE Cédula="+cliente;
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                while(rs.next()){
+                    Object[] fila = new Object[50];
+                    
+                    for(int i = 0; i<50; i++){
+                        fila[i] = rs.getObject(i+1);
+                        
+                    txtidcliente.setText(""+fila[0]);
+                    txtpcliente.setText(""+fila[1]+" "+fila[2]);
+                    }
+                }
+                
+                
+        } catch (SQLException e) {
+            
+        }
+    }
+    
+    public void irpedido(){
+        
+        Pedido.setVisible(true);
+        Pedido.setSize(new Dimension(558,566));
+        Pedido.setLocationRelativeTo(null);
+        Cliente.dispose();
+         JOptionPane.showMessageDialog(null, "Por favor seleccione continuar si desea mantener\n"+
+                "todos los productos que desea Facturar, \n"
+                 +  " de lo contrario seleccione el \n"
+                 + "producto y presione eliminar", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+        
+        pedido();
+        Random();
+        lblnfact.setText(txtnumpedido.getText());
+        cargaempleado();
+        cargacliente();
+        
+    }
+    
+    public void guardarcontinuar(){
+         String nombre, apellidos, correo;
+        int cedula, telefono, n;
+        String SQL;
+        
+        if("".equals(txtnombre_cliente.getText())||"".equals(txt_apellidos.getText())||"".equals(txtced.getText())||"".equals(txtcorreo.getText())||"".equals(txttelefono.getText())){
+            JOptionPane.showMessageDialog(null, "No deje campos en blanco\n"
+            +"Ingrese los faltantes","Advertencia", JOptionPane.WARNING_MESSAGE);
+        }else{
+        nombre = txtnombre_cliente.getText();
+        apellidos = txt_apellidos.getText();
+        correo = txtcorreo.getText();
+        cedula = Integer.parseInt(txtced.getText());
+        telefono = Integer.parseInt(txttelefono.getText());
+        
+        SQL = "INSERT INTO tb_cliente (Cédula, Nombre_cliente, Apellidos, Correo, Telefono) VALUES (?,?,?,?,?)";
+        try {
+            PreparedStatement st = con.prepareStatement(SQL);
+            st.setInt(1, cedula);
+            st.setString(2, nombre);
+            st.setString(3, apellidos);
+            st.setString(4, correo);
+            st.setInt(5, telefono);
+            
+            n = st.executeUpdate();
+            
+            if(n>0){
+                cc = txtced.getText();
+                nomfact = txtnombre_cliente.getText();
+                apfact = txt_apellidos.getText();
+                contfact = txttelefono.getText();
+                JOptionPane.showMessageDialog(null, "Cliente guardado con éxito");
+                irpedido();
+                txtced.setText("");
+                txtnombre_cliente.setText("");
+                txt_apellidos.setText("");
+                txtcorreo.setText("");
+                txttelefono.setText("");
+                
+            }
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        }
+    }
+    
+    public void limpiarTodo(){
+        try{
+            DefaultTableModel modelo = new DefaultTableModel();
+            jtableProducts.setModel(modelo);
+            modelo.setRowCount(0);
+            modelo.addColumn("Código");
+                modelo.addColumn("Artículo");
+                modelo.addColumn("Descripción");
+                modelo.addColumn("Stock");
+                modelo.addColumn("Precio");
+                txtNombre.setText("");
+                txt_buscar.setText("");
+                txtcantidad.setText("");
+                cmbdept.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hogar", "Jardinería", "Iluminación", "Construcción", "Plomería", "Pinturas" }));
+               
+            
+        }catch(Exception e){
+            JOptionPane.showMessageDialog(null, "Eroor al limpiar tabla","1Error¡",JOptionPane.ERROR);
+        }
+    }
+    
+    public void seleccion(){
+        filaseleccionada = jtableProducts.getSelectedRow();
+        try{
+        if(filaseleccionada==-1){
+                    JOptionPane.showMessageDialog(null,"Debe seleccionar una fila de la tabla","Advertencia", JOptionPane.WARNING_MESSAGE);
+                }else{
+            cod  = jtableProducts.getValueAt(filaseleccionada, 0).toString();
+            art  = jtableProducts.getValueAt(filaseleccionada, 1).toString();
+            txt_buscar.setText(cod);
+            txtNombre.setText(art);
+        }
+        
+        }catch(HeadlessException e){
+                System.err.println(e);
+                }
+    }
+    
+    public void irafactura(){
+         facturar();
+        Facturación.setVisible(true);
+        Facturación.setSize(new Dimension(917,699));
+        Facturación.setLocationRelativeTo(null);
+        Pedido.dispose();
+        facturacion();
+        
+        
     }
    
     /**
@@ -440,7 +662,6 @@ public class Menu extends javax.swing.JFrame {
         txtced = new javax.swing.JTextField();
         btnguardar = new javax.swing.JButton();
         btnlimpiarcliente = new javax.swing.JButton();
-        btncontinuar = new javax.swing.JButton();
         Pedido = new javax.swing.JDialog();
         jPanel4 = new javax.swing.JPanel();
         jLabel16 = new javax.swing.JLabel();
@@ -454,10 +675,9 @@ public class Menu extends javax.swing.JFrame {
         txtiduser = new javax.swing.JTextField();
         jLabel20 = new javax.swing.JLabel();
         txtidcliente = new javax.swing.JTextField();
-        btncontinuarfact = new javax.swing.JButton();
         txtnumpedido = new javax.swing.JTextField();
         btneliminarproduct = new javax.swing.JButton();
-        btncobro = new javax.swing.JButton();
+        btnfact = new javax.swing.JButton();
         Facturación = new javax.swing.JDialog();
         jLabel21 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
@@ -710,14 +930,6 @@ public class Menu extends javax.swing.JFrame {
             }
         });
 
-        btncontinuar.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        btncontinuar.setText("Continuar");
-        btncontinuar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btncontinuarActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -733,23 +945,21 @@ public class Menu extends javax.swing.JFrame {
                             .addComponent(jLabel14)
                             .addComponent(jLabel5))
                         .addGap(56, 56, 56)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(txttelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtcorreo, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtced, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtnombre_cliente, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txt_apellidos, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(txt_apellidos, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(btnlimpiarcliente)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnguardar)
+                                .addGap(13, 13, 13))))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(187, 187, 187)
-                        .addComponent(jLabel4))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(53, 53, 53)
-                        .addComponent(btnlimpiarcliente)
-                        .addGap(84, 84, 84)
-                        .addComponent(btnguardar)
-                        .addGap(100, 100, 100)
-                        .addComponent(btncontinuar)))
-                .addContainerGap(120, Short.MAX_VALUE))
+                        .addComponent(jLabel4)))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -779,8 +989,7 @@ public class Menu extends javax.swing.JFrame {
                 .addGap(45, 45, 45)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnlimpiarcliente)
-                    .addComponent(btnguardar)
-                    .addComponent(btncontinuar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnguardar))
                 .addContainerGap(128, Short.MAX_VALUE))
         );
 
@@ -832,13 +1041,6 @@ public class Menu extends javax.swing.JFrame {
 
         txtidcliente.setEditable(false);
 
-        btncontinuarfact.setText("Continuar");
-        btncontinuarfact.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btncontinuarfactActionPerformed(evt);
-            }
-        });
-
         txtnumpedido.setEditable(false);
         txtnumpedido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -853,10 +1055,10 @@ public class Menu extends javax.swing.JFrame {
             }
         });
 
-        btncobro.setText("Carrito");
-        btncobro.addActionListener(new java.awt.event.ActionListener() {
+        btnfact.setText("Facturar");
+        btnfact.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btncobroActionPerformed(evt);
+                btnfactActionPerformed(evt);
             }
         });
 
@@ -895,9 +1097,8 @@ public class Menu extends javax.swing.JFrame {
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 52, Short.MAX_VALUE)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(btncontinuarfact, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(btneliminarproduct, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btncobro, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(btnfact, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE))
                         .addGap(45, 45, 45))))
         );
         jPanel4Layout.setVerticalGroup(
@@ -928,11 +1129,9 @@ public class Menu extends javax.swing.JFrame {
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(btncontinuarfact)
-                        .addGap(32, 32, 32)
                         .addComponent(btneliminarproduct)
                         .addGap(29, 29, 29)
-                        .addComponent(btncobro)
+                        .addComponent(btnfact)
                         .addGap(74, 74, 74))))
         );
 
@@ -1052,6 +1251,12 @@ public class Menu extends javax.swing.JFrame {
         jLabel30.setText("Paga con:");
 
         jLabel31.setText("Cambio:");
+
+        txtpaga.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtpagaActionPerformed(evt);
+            }
+        });
 
         txtcambio.setEditable(false);
 
@@ -1372,18 +1577,7 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnMenuActionPerformed
 
     private void btnconsultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnconsultaActionPerformed
-        if("".equals(txtNombre.getText())&&"".equals(txt_buscar.getText())){
-               JOptionPane.showMessageDialog(null, "POR FAVOR INGRESE DATOS VÁLIDOS A BUSCAR");
-        }else
-        if("".equals(txtNombre.getText())){
-            cod = txt_buscar.getText();
-            nombb = txtNombre.getText();
-            m.BusquedaCodigo(cod, nombb, (DefaultTableModel) jtableProducts.getModel());
-            
-        }else{
-            cod = txtNombre.getText();
-            m.BusquedaNombre(cod, (DefaultTableModel) jtableProducts.getModel());
-        }
+        consultas();
     }//GEN-LAST:event_btnconsultaActionPerformed
 
     private void btndesplegarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btndesplegarActionPerformed
@@ -1393,7 +1587,7 @@ public class Menu extends javax.swing.JFrame {
         try {
                 DefaultTableModel modelo = new DefaultTableModel();
                 jtableProducts.setModel(modelo);
-                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, fk_stock, Precio FROM tb_producto";
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, stock, Precio FROM tb_producto";
                 
                 ps = con.prepareStatement(SQL);
                 rs = ps.executeQuery();
@@ -1423,7 +1617,7 @@ public class Menu extends javax.swing.JFrame {
 
     private void btncarritoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncarritoActionPerformed
          
-        añadir();
+        añadiralcarrito();
     }//GEN-LAST:event_btncarritoActionPerformed
 
     private void btniralcarritoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btniralcarritoActionPerformed
@@ -1443,77 +1637,13 @@ public class Menu extends javax.swing.JFrame {
 
     private void btneliminarfilacarritoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneliminarfilacarritoActionPerformed
 
-         double x = 0.0, impuesto = 0.0, nuevototal= 0.0, importa = 0.0, precioactual;
-        int respuesta, fila;
+        eliminarfiladelcarrito();
         
-        try {
-               filaseleccionada = tablacarrito.getSelectedRow();
-               if(filaseleccionada==-1){
-                   JOptionPane.showMessageDialog(null, "Por favor seleccione el producto que desea eliminar", "Intente de nuevo", JOptionPane.WARNING_MESSAGE);
-               }else{
-                   respuesta = JOptionPane.showConfirmDialog(null, "¿Desea eliminar este producto de su carrito?\n" +
-                           "De ser así deberá agregar de nuevo el producto", "Acción", JOptionPane.YES_NO_OPTION);
-                   
-                   if(respuesta == JOptionPane.YES_OPTION){
-                       importa = Double.parseDouble(tablacarrito.getValueAt(filaseleccionada, 4).toString());
-                       precioactual = Double.parseDouble(txtsub.getText())-importa;
-                       sub_total = precioactual;
-                       txtsub.setText(""+sub_total);
-                       
-                       impuesto = sub_total * 0.13;
-                       txtiva.setText(""+impuesto);
-                       
-                       nuevototal = sub_total+impuesto;
-                       
-                      txtTotal.setText(""+nuevototal);
-                      
-                      modelo = (DefaultTableModel)tablacarrito.getModel();
-                      modelo.removeRow(filaseleccionada);
-                      
-                   }
-               }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "No se ha realizado la eliminación del producto", "Verifique", JOptionPane.ERROR_MESSAGE);
-        }
-        
-
     }//GEN-LAST:event_btneliminarfilacarritoActionPerformed
 
     private void cmbdeptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbdeptActionPerformed
-
-        
-        String op = (String) cmbdept.getSelectedItem();
-        int d;
-        
-        if(null != op)switch (op) {
-            case "Hogar":
-                d=1;
-                dept(d);
-                break;
-            case "Jardinería":
-                d=2;
-                dept(d);
-                break;
-            case "Iluminación":
-                d=3;
-                dept(d);
-                break;
-            case "Construcción":
-                d=6;
-                dept(d);
-                break;
-            case "Plomería":
-                d=7;
-                dept(d);
-                break;
-            case "Pinturas":
-                d=8;
-                dept(d);
-                break;
-            default:
-                break;
-        }
-        
+    
+        mostrardedept();
     }//GEN-LAST:event_cmbdeptActionPerformed
 
     private void jtableProductsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jtableProductsMouseClicked
@@ -1561,50 +1691,8 @@ public class Menu extends javax.swing.JFrame {
 
     private void btnguardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnguardarActionPerformed
        
-        String nombre, apellidos, correo;
-        int cedula, telefono, n;
-        String SQL;
+        guardarcontinuar();
         
-        if("".equals(txtnombre_cliente.getText())||"".equals(txt_apellidos.getText())||"".equals(txtced.getText())||"".equals(txtcorreo.getText())||"".equals(txttelefono.getText())){
-            JOptionPane.showMessageDialog(null, "No deje campos en blanco\n"
-            +"Ingrese los faltantes","Advertencia", JOptionPane.WARNING_MESSAGE);
-        }else{
-        nombre = txtnombre_cliente.getText();
-        apellidos = txt_apellidos.getText();
-        correo = txtcorreo.getText();
-        cedula = Integer.parseInt(txtced.getText());
-        telefono = Integer.parseInt(txttelefono.getText());
-        
-        SQL = "INSERT INTO tb_cliente (Cédula, Nombre_cliente, Apellidos, Correo, Telefono) VALUES (?,?,?,?,?)";
-        try {
-            PreparedStatement st = con.prepareStatement(SQL);
-            st.setInt(1, cedula);
-            st.setString(2, nombre);
-            st.setString(3, apellidos);
-            st.setString(4, correo);
-            st.setInt(5, telefono);
-            
-            n = st.executeUpdate();
-            
-            if(n>0){
-                cc = txtced.getText();
-                nomfact = txtnombre_cliente.getText();
-                apfact = txt_apellidos.getText();
-                contfact = txttelefono.getText();
-                JOptionPane.showMessageDialog(null, "Cliente guardado con éxito");
-                txtced.setText("");
-                txtnombre_cliente.setText("");
-                txt_apellidos.setText("");
-                txtcorreo.setText("");
-                txttelefono.setText("");
-                
-            }
-            
-            
-        } catch (SQLException ex) {
-            Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        }
     }//GEN-LAST:event_btnguardarActionPerformed
 
     private void btnlimpiarclienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnlimpiarclienteActionPerformed
@@ -1617,87 +1705,6 @@ public class Menu extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnlimpiarclienteActionPerformed
 
-    private void btncontinuarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncontinuarActionPerformed
-        
-        Pedido.setVisible(true);
-        Pedido.setSize(new Dimension(558,566));
-        Pedido.setLocationRelativeTo(null);
-        Cliente.dispose();
-         JOptionPane.showMessageDialog(null, "Por favor seleccione los productos\n"+
-                "que desea Facturar \n"
-                 + "eliminar", "Acción necesaria", JOptionPane.INFORMATION_MESSAGE);
-        
-        pedido();
-        Random();
-        lblnfact.setText(txtnumpedido.getText());
-        cargaempleado();
-        cargacliente();
-        
-        
-        
-    }//GEN-LAST:event_btncontinuarActionPerformed
-
-    private void btncontinuarfactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncontinuarfactActionPerformed
-        // TODO add your handling code here:
-         
-        int productofk, empleadofk, clientefk, cantidad,n, idfact;
-        double sub, total, impuesto;
-        String prfk, empfk, clfk;
-        
-        String SQL;
-        
-        filaseleccionada = tblpedido.getSelectedRow();
-        
-         SQL = "INSERT INTO tb_factura (idtb_facura, fecha, Subtotal, Impuesto, Total, producto_fk, cantidad, empleado_fk, cliente_fk) VALUES (?,?,?,?,?,?,?,?,?)";
-          
-         try{
-          
-          idfact = Integer.parseInt(txtnumpedido.getText());
-          sub = Double.parseDouble(txtsub.getText());
-          total = Double.parseDouble(txtTotal.getText());
-          impuesto = Double.parseDouble(txtiva.getText());
-            
-         if(filaseleccionada==-1){
-                   
-             JOptionPane.showMessageDialog(null,"Debe seleccionar un producto","Advertencia", JOptionPane.WARNING_MESSAGE);
-               
-         }else{
-             
-          prfk  = tblpedido.getValueAt(filaseleccionada, 0).toString();
-          empfk  = tblpedido.getValueAt(filaseleccionada, 1).toString();
-          productofk = Integer.parseInt(prfk);
-          cantidad = Integer.parseInt(empfk);
-          empleadofk = Integer.parseInt(txtiduser.getText());
-          clientefk = Integer.parseInt(txtidcliente.getText());
-          
-            
-             PreparedStatement st = con.prepareStatement(SQL);
-             st.setInt(1, idfact);
-             st.setString(2, lblfecha.getText());
-             st.setDouble(3, sub);
-             st.setDouble(4, impuesto);
-             st.setDouble(5, total);
-             st.setInt(6, productofk);
-             st.setInt(7, cantidad);
-             st.setInt(8, empleadofk);
-             st.setInt(9, clientefk);
-             
-             n = st.executeUpdate();
-             
-             if(n>0){
-                
-                JOptionPane.showMessageDialog(null, "Pedido guardado con éxito");
-                
-                filaseleccionada = tblpedido.getSelectedRow();
-                modelo = (DefaultTableModel)tblpedido.getModel();
-                modelo.removeRow(filaseleccionada);
-            }
-         }
-        } catch (SQLException e) {
-            Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, e);
-        }
-    }//GEN-LAST:event_btncontinuarfactActionPerformed
-
     private void jPanel4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel4MouseClicked
         // TODO add your handling code here:
        
@@ -1705,53 +1712,36 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_jPanel4MouseClicked
 
     private void btneliminarproductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneliminarproductActionPerformed
-        // TODO add your handling code here:
         
-        elimfact();
+        elimdefact(); 
         
     }//GEN-LAST:event_btneliminarproductActionPerformed
 
-    private void btncobroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncobroActionPerformed
+    private void btnfactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnfactActionPerformed
        
-        Facturación.setVisible(true);
-        Facturación.setSize(new Dimension(917,699));
-        Facturación.setLocationRelativeTo(null);
-        Pedido.dispose();
-        facturacion();
+        irafactura();
         
-        
-    }//GEN-LAST:event_btncobroActionPerformed
+    }//GEN-LAST:event_btnfactActionPerformed
 
     private void txtnumpedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtnumpedidoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtnumpedidoActionPerformed
 
     private void btnpagarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnpagarActionPerformed
-        double total, pago, cambio;
-        
-        total = Double.parseDouble(txttotalfact.getText());
-        pago= Double.parseDouble(txtpaga.getText());
-
-        if(pago>=total){
-            
-            cambio = pago-total;
-            JOptionPane.showMessageDialog(null, "¡Gracias por su compra! \n"+ nomfact+
-                    ", ha sido un gusto atenderte", "Gracias", JOptionPane.INFORMATION_MESSAGE);
-            txtcambio.setText(""+cambio);
-            
-        }else{
-            JOptionPane.showMessageDialog(null, "Su pago debe ser mayor o igual al total de su factura\n"+
-                    "   Intente de nuevo    ", "Intente de nuevo", JOptionPane.WARNING_MESSAGE);
-        }
-        
+       
+       pagar();
         
     }//GEN-LAST:event_btnpagarActionPerformed
 
     private void txtsubActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtsubActionPerformed
-        // TODO add your handling code here:
+       
     }//GEN-LAST:event_txtsubActionPerformed
 
-    /**
+    private void txtpagaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtpagaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtpagaActionPerformed
+
+    /*
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -1800,13 +1790,11 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton btnInventario;
     private javax.swing.JButton btnVendedores;
     private javax.swing.JButton btncarrito;
-    private javax.swing.JButton btncobro;
     private javax.swing.JButton btnconsulta;
-    private javax.swing.JButton btncontinuar;
-    private javax.swing.JButton btncontinuarfact;
     private javax.swing.JButton btndesplegar;
     private javax.swing.JButton btneliminarfilacarrito;
     private javax.swing.JButton btneliminarproduct;
+    private javax.swing.JButton btnfact;
     private javax.swing.JButton btnguardar;
     private javax.swing.JButton btniralcarrito;
     private javax.swing.JButton btnlimpiar;
@@ -1858,7 +1846,7 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JTable jtableProducts;
     private javax.swing.JLabel lbcantidad;
-    private javax.swing.JLabel lblfecha;
+    public static javax.swing.JLabel lblfecha;
     public static javax.swing.JLabel lblnfact;
     public static javax.swing.JLabel lbusuario;
     public static javax.swing.JLabel lbusuario1;
@@ -1876,7 +1864,7 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JTextField txt_apellidos;
     private javax.swing.JTextField txt_buscar;
     private javax.swing.JTextField txtapcltfact;
-    private javax.swing.JTextField txtcambio;
+    public static javax.swing.JTextField txtcambio;
     private javax.swing.JTextField txtcantidad;
     private javax.swing.JTextField txtced;
     private javax.swing.JTextField txtcontactcltfact3;
@@ -1888,12 +1876,12 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JTextField txtnmclfact;
     private javax.swing.JTextField txtnombre_cliente;
     private javax.swing.JTextField txtnumpedido;
-    private javax.swing.JTextField txtpaga;
+    public static javax.swing.JTextField txtpaga;
     private javax.swing.JTextField txtpcliente;
     private javax.swing.JTextField txtpusuario;
     private javax.swing.JTextField txtsub;
     private javax.swing.JTextField txtsubfact;
     private javax.swing.JTextField txttelefono;
-    private javax.swing.JTextField txttotalfact;
+    public static javax.swing.JTextField txttotalfact;
     // End of variables declaration//GEN-END:variables
 }
