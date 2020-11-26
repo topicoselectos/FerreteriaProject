@@ -5,11 +5,16 @@
  */
 package Clases;
 
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -89,5 +94,23 @@ public class Metodos {
         
     }    
     
+        public void num(JTextField a, String s){
+        a.addKeyListener(new KeyAdapter() {
+        public void keyTyped(KeyEvent e){
+            char c = e.getKeyChar();
+            if(!Character.isDigit(c)&& c!= '.'){
+                e.consume();
+            }
+            if(c=='.'&& s.contains(".")){
+                e.consume();
+            }
+        }
+        
+        });
+        
     
+    }
+        
+        
+     
 }

@@ -45,7 +45,8 @@ public class Menu extends javax.swing.JFrame {
     int cm;
     Metodos m = new Metodos();
 
-    String cc, nomfact, contfact, apfact;
+    String cc, nomfact, contfact, apfact,f;
+    
     public static int filaseleccionada;
     DefaultTableModel modelo;
     DefaultTableModel model;
@@ -54,7 +55,8 @@ public class Menu extends javax.swing.JFrame {
     public Menu() {
         initComponents();
         setLocationRelativeTo(null);
-        fecha();
+        
+        num(txt_buscar);
         num(txtced);
         num(txtcantidad);
         num(txttelefono);
@@ -64,6 +66,20 @@ public class Menu extends javax.swing.JFrame {
     }
 
     
+    public void num(JTextField a){
+        a.addKeyListener(new KeyAdapter() {
+        public void keyTyped(KeyEvent e){
+            char c = e.getKeyChar();
+            if(!Character.isDigit(c)&& c!= '.'){
+                e.consume();
+            }
+            if(c=='.'&& txtced.getText().contains(".")){
+                e.consume();
+            }
+        }
+        
+        });
+    }
     
     public void Random(){
         
@@ -88,14 +104,12 @@ public class Menu extends javax.swing.JFrame {
     }
     
     public void fecha(){
-    
-        Date fecha = new Date();
-        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd-MM-YYYY");
-        
-        lblfecha.setText(formatoFecha.format(fecha));
-        
+         
+         Date fecha = new Date();
+         SimpleDateFormat formatoFecha = new SimpleDateFormat("dd-MM-YYYY");
+         lblfecha.setText(formatoFecha.format(fecha));
+         
     }
-    
     
     public void dept(int d){
         try {
@@ -128,36 +142,7 @@ public class Menu extends javax.swing.JFrame {
             System.err.println(e.toString());
         }
     }
-    
-    private DefaultListModel modelList(){
-        DefaultListModel lista = new DefaultListModel<>();
-        
-        lista.addElement("\n\nCédula: "+txtced.getText()+"\n\n");
-        lista.addElement("\n\nNombre: "+txtnombre_cliente.getText()+"\n\n");
-        lista.addElement("\n\nApellidos: "+txt_apellidos.getText()+"\n\n");
-        lista.addElement("\n\nCorreo electrónico: "+txtcorreo.getText()+"\n\n");
-        lista.addElement("\n\nNúmero Teléfono: "+txttelefono.getText()+"\n\n");
-        
-        return lista;
-    }
-    
-    public void num(JTextField a){
-        a.addKeyListener(new KeyAdapter() {
-        public void keyTyped(KeyEvent e){
-            char c = e.getKeyChar();
-            if(!Character.isDigit(c)&& c!= '.'){
-                e.consume();
-            }
-            if(c=='.'&& txtced.getText().contains(".")){
-                e.consume();
-            }
-        }
-        
-        });
-        
-    
-    }
-    
+   
     public void elimfact(){
          double x = 0.0, impuesto = 0.0, nuevototal= 0.0, importa = 0.0, precioactual;
         int respuesta, fila;
@@ -990,19 +975,17 @@ public class Menu extends javax.swing.JFrame {
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jLabel23)
                         .addGap(18, 18, 18)
                         .addComponent(txtnmclfact, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jLabel24)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(txtapcltfact))
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jLabel25)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(txtcontactcltfact3)))
@@ -1198,7 +1181,7 @@ public class Menu extends javax.swing.JFrame {
             }
         });
         pnlMenu.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(1270, 20, 190, 40));
-        pnlMenu.add(lblfecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 20, 220, 40));
+        pnlMenu.add(lblfecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 30, 190, 30));
 
         jPanel1.add(pnlMenu, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1480, 70));
 
@@ -1650,6 +1633,8 @@ public class Menu extends javax.swing.JFrame {
         cargaempleado();
         cargacliente();
         
+        
+        
     }//GEN-LAST:event_btncontinuarActionPerformed
 
     private void btncontinuarfactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncontinuarfactActionPerformed
@@ -1660,7 +1645,7 @@ public class Menu extends javax.swing.JFrame {
         String prfk, empfk, clfk;
         
         String SQL;
-         
+        
         filaseleccionada = tblpedido.getSelectedRow();
         
          SQL = "INSERT INTO tb_factura (idtb_facura, fecha, Subtotal, Impuesto, Total, producto_fk, cantidad, empleado_fk, cliente_fk) VALUES (?,?,?,?,?,?,?,?,?)";
@@ -1685,8 +1670,7 @@ public class Menu extends javax.swing.JFrame {
           empleadofk = Integer.parseInt(txtiduser.getText());
           clientefk = Integer.parseInt(txtidcliente.getText());
           
-         
-         
+            
              PreparedStatement st = con.prepareStatement(SQL);
              st.setInt(1, idfact);
              st.setString(2, lblfecha.getText());
@@ -1699,25 +1683,19 @@ public class Menu extends javax.swing.JFrame {
              st.setInt(9, clientefk);
              
              n = st.executeUpdate();
-        
-            
              
-            if(n>0){
+             if(n>0){
                 
                 JOptionPane.showMessageDialog(null, "Pedido guardado con éxito");
                 
                 filaseleccionada = tblpedido.getSelectedRow();
                 modelo = (DefaultTableModel)tblpedido.getModel();
-                      modelo.removeRow(filaseleccionada);
-                
+                modelo.removeRow(filaseleccionada);
             }
          }
         } catch (SQLException e) {
             Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, e);
         }
-        
-        
-        
     }//GEN-LAST:event_btncontinuarfactActionPerformed
 
     private void jPanel4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel4MouseClicked
@@ -1880,7 +1858,7 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JTable jtableProducts;
     private javax.swing.JLabel lbcantidad;
-    public static javax.swing.JLabel lblfecha;
+    private javax.swing.JLabel lblfecha;
     public static javax.swing.JLabel lblnfact;
     public static javax.swing.JLabel lbusuario;
     public static javax.swing.JLabel lbusuario1;
