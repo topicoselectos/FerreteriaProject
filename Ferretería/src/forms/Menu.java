@@ -8,6 +8,7 @@ package forms;
 import Clases.Metodos;
 import java.sql.Connection;
 import Clases.Conectar;
+import static forms.login.txtusuario;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.KeyAdapter;
@@ -16,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -150,6 +152,41 @@ public class Menu extends javax.swing.JFrame {
             System.err.println(e.toString());
         }
     }
+    
+    public void despliegaproductos(){
+        
+        filaseleccionada = jtableProducts.getSelectedRow();
+        
+        try {
+                DefaultTableModel modelo = new DefaultTableModel();
+                jtableProducts.setModel(modelo);
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, stock, Precio FROM tb_producto";
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                int cantidadColumna = rsMd.getColumnCount();
+                modelo.addColumn("Código");
+                modelo.addColumn("Artículo");
+                modelo.addColumn("Descripción");
+                modelo.addColumn("Stock");
+                modelo.addColumn("Precio");
+                while(rs.next()){
+                    Object[] fila = new Object[cantidadColumna];
+                    
+                    for(int i = 0; i<cantidadColumna; i++){
+                        fila[i] = rs.getObject(i+1);
+                    }
+                    modelo.addRow(fila);
+                }
+                
+                
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+        
+    }
      
     public void mostrardedept(){
         
@@ -255,6 +292,10 @@ public class Menu extends javax.swing.JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error de tipo: "+e, "Error", JOptionPane.ERROR_MESSAGE);
         }
+        
+    }
+    
+    public void admin(){
         
     }
      
@@ -508,6 +549,13 @@ public class Menu extends javax.swing.JFrame {
         }
     }
     
+    public void ircarrito(){
+        Carrito.setSize(new Dimension(903,585));
+        lbusuario1.setText(lbusuario.getText());
+        Carrito.setVisible(true);
+        Carrito.setLocationRelativeTo(null);
+      
+    }
     public void irpedido(){
         
         Pedido.setVisible(true);
@@ -714,6 +762,7 @@ public class Menu extends javax.swing.JFrame {
         btnCajeros = new javax.swing.JButton();
         btnInventario = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        btnregistroempleados = new javax.swing.JButton();
         pnlVendedores = new javax.swing.JPanel();
         pnlCajeros = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1424,6 +1473,14 @@ public class Menu extends javax.swing.JFrame {
         jLabel1.setEnabled(false);
         pnlMenuDeslizable.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 210, 160));
 
+        btnregistroempleados.setText("RegistrarEmpleados");
+        btnregistroempleados.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnregistroempleadosActionPerformed(evt);
+            }
+        });
+        pnlMenuDeslizable.add(btnregistroempleados, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 510, -1, -1));
+
         jPanel1.add(pnlMenuDeslizable, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 240, 610));
 
         pnlVendedores.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -1582,36 +1639,7 @@ public class Menu extends javax.swing.JFrame {
 
     private void btndesplegarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btndesplegarActionPerformed
 
-        filaseleccionada = jtableProducts.getSelectedRow();
-        
-        try {
-                DefaultTableModel modelo = new DefaultTableModel();
-                jtableProducts.setModel(modelo);
-                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, stock, Precio FROM tb_producto";
-                
-                ps = con.prepareStatement(SQL);
-                rs = ps.executeQuery();
-                
-                ResultSetMetaData rsMd = rs.getMetaData();
-                int cantidadColumna = rsMd.getColumnCount();
-                modelo.addColumn("Código");
-                modelo.addColumn("Artículo");
-                modelo.addColumn("Descripción");
-                modelo.addColumn("Stock");
-                modelo.addColumn("Precio");
-                while(rs.next()){
-                    Object[] fila = new Object[cantidadColumna];
-                    
-                    for(int i = 0; i<cantidadColumna; i++){
-                        fila[i] = rs.getObject(i+1);
-                    }
-                    modelo.addRow(fila);
-                }
-                
-                
-        } catch (Exception e) {
-            System.err.println(e.toString());
-        }
+       despliegaproductos();
         
     }//GEN-LAST:event_btndesplegarActionPerformed
 
@@ -1621,11 +1649,8 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_btncarritoActionPerformed
 
     private void btniralcarritoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btniralcarritoActionPerformed
-        Carrito.setSize(new Dimension(903,585));
-        lbusuario1.setText(lbusuario.getText());
-        Carrito.setVisible(true);
-        Carrito.setLocationRelativeTo(null);
-      
+        ircarrito();    
+        
     }//GEN-LAST:event_btniralcarritoActionPerformed
 
     private void btnlimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnlimpiarActionPerformed
@@ -1741,6 +1766,16 @@ public class Menu extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtpagaActionPerformed
 
+    private void btnregistroempleadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnregistroempleadosActionPerformed
+        
+        AccesoAdmin a = new AccesoAdmin();
+        a.setVisible(true);
+        this.dispose();
+        
+        
+        
+    }//GEN-LAST:event_btnregistroempleadosActionPerformed
+
     /*
      * @param args the command line arguments
      */
@@ -1800,6 +1835,7 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton btnlimpiar;
     private javax.swing.JButton btnlimpiarcliente;
     private javax.swing.JButton btnpagar;
+    private javax.swing.JButton btnregistroempleados;
     private javax.swing.JComboBox<String> cmbdept;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton4;
