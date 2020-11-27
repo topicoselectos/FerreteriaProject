@@ -485,7 +485,7 @@ public class Menu extends javax.swing.JFrame {
         String cliente = cc;
         
         try {
-                String SQL = "SELECT idtb_cliente, Nombre_cliente, Apellidos FROM tb_cliente WHERE Cédula="+cliente;
+                String SQL = "SELECT idtb_cliente, Nombre_cliente, Apellido FROM tb_cliente WHERE Cédula="+cliente;
                 
                 ps = con.prepareStatement(SQL);
                 rs = ps.executeQuery();
@@ -542,7 +542,7 @@ public class Menu extends javax.swing.JFrame {
         cedula = Integer.parseInt(txtced.getText());
         telefono = Integer.parseInt(txttelefono.getText());
         
-        SQL = "INSERT INTO tb_cliente (Cédula, Nombre_cliente, Apellidos, Correo, Telefono) VALUES (?,?,?,?,?)";
+        SQL = "INSERT INTO tb_cliente (Cédula, Nombre_cliente, Apellido, Correo, Telefono) VALUES (?,?,?,?,?)";
         try {
             PreparedStatement st = con.prepareStatement(SQL);
             st.setInt(1, cedula);
