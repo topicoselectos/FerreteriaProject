@@ -92,7 +92,7 @@ Conectar co = new Conectar();
         int resultado  = 0; 
         String pass= String.valueOf(pswdadmin.getPassword());
         String usuario = txtusuario.getText();
-        String SQL = "SELECT * FROM tb_empleado where Nom_usuario='andreszamoraz' AND Contraseña='"+pass+"'";
+        String SQL = "SELECT * FROM tb_empleado where Nom_usuario='edwardarcem' AND Contraseña='"+pass+"'";
         
         try{
             Statement st = con.createStatement();

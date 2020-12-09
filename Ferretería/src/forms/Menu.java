@@ -121,6 +121,23 @@ public class Menu extends javax.swing.JFrame {
         }
     }
     
+    public void busquedacliente(){
+        
+        String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, stock, Precio FROM tb_producto WHERE idtb_producto=" + cod;
+              
+        try{
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+         
+                while(rs.next()){
+                    
+                }
+                
+        }catch(Exception e){
+                        
+                        }
+    }
+    
     public void dept(int d){
         try {
                 DefaultTableModel modelo = new DefaultTableModel();
@@ -449,8 +466,6 @@ public class Menu extends javax.swing.JFrame {
     }
     
     public void pedido(){
-        
-               
         String cod, cant,emp, clt;
         DefaultTableModel model = new DefaultTableModel();
         
@@ -474,8 +489,7 @@ public class Menu extends javax.swing.JFrame {
     
     public void pagar(){
         
-         double total, pago, cambio;
-        
+        double total, pago, cambio;
         total = Double.parseDouble(txttotalfact.getText());
         pago= Double.parseDouble(txtpaga.getText());
 
@@ -485,6 +499,8 @@ public class Menu extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "¡Gracias por su compra! \n"+ nomfact+
                     ", ha sido un gusto atenderte", "Gracias", JOptionPane.INFORMATION_MESSAGE);
             txtcambio.setText(""+cambio);
+            
+            
             
         }else{
             JOptionPane.showMessageDialog(null, "Su pago debe ser mayor o igual al total de su factura\n"+
@@ -600,7 +616,6 @@ public class Menu extends javax.swing.JFrame {
             st.setInt(5, telefono);
             
             n = st.executeUpdate();
-            
             if(n>0){
                 cc = txtced.getText();
                 nomfact = txtnombre_cliente.getText();
@@ -662,7 +677,8 @@ public class Menu extends javax.swing.JFrame {
     }
     
     public void irafactura(){
-         facturar();
+        
+        facturar();
         Facturación.setVisible(true);
         Facturación.setSize(new Dimension(917,699));
         Facturación.setLocationRelativeTo(null);
@@ -726,6 +742,7 @@ public class Menu extends javax.swing.JFrame {
         txtnumpedido = new javax.swing.JTextField();
         btneliminarproduct = new javax.swing.JButton();
         btnfact = new javax.swing.JButton();
+        btnañadirfact = new javax.swing.JButton();
         Facturación = new javax.swing.JDialog();
         jLabel21 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
@@ -1111,6 +1128,13 @@ public class Menu extends javax.swing.JFrame {
             }
         });
 
+        btnañadirfact.setText("Añadir a factura");
+        btnañadirfact.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnañadirfactActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -1145,9 +1169,11 @@ public class Menu extends javax.swing.JFrame {
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 52, Short.MAX_VALUE)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(btneliminarproduct, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnfact, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE))
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(btneliminarproduct, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnfact, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE))
+                            .addComponent(btnañadirfact))
                         .addGap(45, 45, 45))))
         );
         jPanel4Layout.setVerticalGroup(
@@ -1178,6 +1204,8 @@ public class Menu extends javax.swing.JFrame {
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                        .addComponent(btnañadirfact)
+                        .addGap(64, 64, 64)
                         .addComponent(btneliminarproduct)
                         .addGap(29, 29, 29)
                         .addComponent(btnfact)
@@ -1770,11 +1798,14 @@ public class Menu extends javax.swing.JFrame {
         
         AccesoAdmin a = new AccesoAdmin();
         a.setVisible(true);
-        this.dispose();
         
         
         
     }//GEN-LAST:event_btnregistroempleadosActionPerformed
+
+    private void btnañadirfactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnañadirfactActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnañadirfactActionPerformed
 
     /*
      * @param args the command line arguments
@@ -1824,6 +1855,7 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton btnContinuar;
     private javax.swing.JButton btnInventario;
     private javax.swing.JButton btnVendedores;
+    private javax.swing.JButton btnañadirfact;
     private javax.swing.JButton btncarrito;
     private javax.swing.JButton btnconsulta;
     private javax.swing.JButton btndesplegar;

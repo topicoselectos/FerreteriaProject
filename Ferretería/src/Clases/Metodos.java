@@ -76,7 +76,8 @@ public class Metodos {
                 ResultSetMetaData rsMd = rs.getMetaData();
                 int cantidadColumna = rsMd.getColumnCount();
                 
-                
+                if(rs.next()){
+                    
                 while(rs.next()){
                     Object[] fila = new Object[cantidadColumna];
                     
@@ -87,7 +88,9 @@ public class Metodos {
                     nom=(""+fila[0]);
                 }
                 
-                
+                }else{
+                    JOptionPane.showMessageDialog(null, "Producto no encontrado");
+                }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Artículo no encontrado","Advertencia",JOptionPane.WARNING_MESSAGE);
         }

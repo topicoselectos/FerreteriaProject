@@ -63,7 +63,7 @@ public class Facturación extends javax.swing.JFrame {
 
             },
             new String [] {
-                "N° Factura", "Código Producto", "Total", "Fecha"
+                "N° Factura", "Total", "Fecha"
             }
         ));
         jScrollPane1.setViewportView(tablafactura);
@@ -110,14 +110,13 @@ public class Facturación extends javax.swing.JFrame {
         tablafactura.setModel(model);
         try {
                 
-                String SQL = "SELECT idtb_facura, producto_fk, Total, fecha FROM tb_factura WHERE idtb_facura=" + fact;
+                String SQL = "SELECT idtb_facura, Total, fecha FROM tb_factura WHERE idtb_facura=" + fact;
                 
                 ps = con.prepareStatement(SQL);
                 rs = ps.executeQuery();
                 
                 
                 model.addColumn("N° Factura");
-                model.addColumn("Código Producto");
                 model.addColumn("Total pagado");
                 model.addColumn("Fecha");
                 
@@ -135,7 +134,7 @@ public class Facturación extends javax.swing.JFrame {
                 } 
                 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Por favor inrgese el dato a buscar en la parte de arriba de la pestaña","Advertencia",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error de tipo: " +e,"Advertencia",JOptionPane.WARNING_MESSAGE);
         }
         
     }//GEN-LAST:event_btnbuscarfactActionPerformed
