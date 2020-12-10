@@ -28,6 +28,7 @@ Conectar co = new Conectar();
      */
     public AccesoAdmin() {
         initComponents();
+        this.setLocationRelativeTo(null);
     }
 
     /**
@@ -90,6 +91,8 @@ Conectar co = new Conectar();
         
         
         int resultado  = 0; 
+        int op = 0 ;
+        String opcion;
         String pass= String.valueOf(pswdadmin.getPassword());
         String usuario = txtusuario.getText();
         String SQL = "SELECT * FROM tb_empleado where Nom_usuario='edwardarcem' AND Contraseña='"+pass+"'";
@@ -103,9 +106,25 @@ Conectar co = new Conectar();
                 
                 if(resultado == 1){
                     
-                    Registro_Empleados re = new Registro_Empleados();
-                    re.setVisible(true);
-                    this.dispose();
+                    opcion = JOptionPane.showInputDialog(null,"1. Registro de Empleados\n"
+                            + "2.Ingreso de Productos");
+                    op= Integer.parseInt(opcion);
+                    
+                    switch (op) {
+                        case 1:
+                            Registro_Empleados re = new Registro_Empleados();
+                            re.setVisible(true);
+                            this.dispose();
+                            break;
+                        case 2:
+                            IngresoProductos in = new IngresoProductos();
+                            in.setVisible(true);
+                            this.dispose();
+                            break;
+                        default:
+                            JOptionPane.showMessageDialog(null, "Ingrese un dato válido");
+                            break;
+                    }
                 }
                 
             }else{

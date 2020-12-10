@@ -73,11 +73,31 @@ public class Metodos {
                 ps = con.prepareStatement(SQL);
                 rs = ps.executeQuery();
                 
+                
+                if(rs.next()){
+                    bucle(nom, model);
+                }else{
+                    JOptionPane.showMessageDialog(null, "Artículo no encontrado","Advertencia",JOptionPane.WARNING_MESSAGE);
+                }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error de tipo: "+e,"Advertencia",JOptionPane.WARNING_MESSAGE);
+        }
+        
+        
+        
+    }    
+    
+    public void bucle( String nom, DefaultTableModel model){
+        
+        try {
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, stock, Precio FROM tb_producto WHERE Nombre LIKE '%" + nom+"%'";
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
                 ResultSetMetaData rsMd = rs.getMetaData();
                 int cantidadColumna = rsMd.getColumnCount();
                 
-                if(rs.next()){
-                    
                 while(rs.next()){
                     Object[] fila = new Object[cantidadColumna];
                     
@@ -88,16 +108,93 @@ public class Metodos {
                     nom=(""+fila[0]);
                 }
                 
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error de tipo: "+e,"Advertencia",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    public void bucleinsertar(String nom, DefaultTableModel model){
+        
+        try {
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, Precio FROM tb_producto WHERE Nombre LIKE '%" + nom+"%'";
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                int cantidadColumna = rsMd.getColumnCount();
+                
+                while(rs.next()){
+                    Object[] fila = new Object[cantidadColumna];
+                    
+                    for(int i = 0; i<cantidadColumna; i++){
+                        fila[i] = rs.getObject(i+1);
+                    }
+                    model.addRow(fila);
+                    nom=(""+fila[0]);
+                }
+                
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error de tipo: "+e,"Advertencia",JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    public void ingresocod(String cod, String nom, DefaultTableModel model){
+        
+        try {
+                
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, Precio FROM tb_producto WHERE idtb_producto=" + cod;
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                ResultSetMetaData rsMd = rs.getMetaData();
+                int cantidadColumna = rsMd.getColumnCount();
+                do{
+                if(rs.next()){
+                    Object[] fila = new Object[cantidadColumna];
+                    
+                    for(int i = 0; i<cantidadColumna; i++){
+                        fila[i] = rs.getObject(i+1);
+                    }
+                    model.addRow(fila);
+                    nom =(""+fila[1]);
                 }else{
-                    JOptionPane.showMessageDialog(null, "Producto no encontrado");
+                    JOptionPane.showMessageDialog(null, "Artículo no encontrado en nuestra base de datos", "¡Consulta Fallida!", JOptionPane.OK_OPTION);
+                    nom = "";
+                    cod = "";
+                }
+                }while(rs.next());  
+                
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Por favor inrgese el dato a buscar en la parte de arriba de la pestaña","Advertencia",JOptionPane.WARNING_MESSAGE);
+        }
+        
+        
+    }
+    
+    public void ingresnombre(String nom, DefaultTableModel model){
+        
+         try {
+                String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, Precio FROM tb_producto WHERE Nombre LIKE '%" + nom+"%'";
+                
+                ps = con.prepareStatement(SQL);
+                rs = ps.executeQuery();
+                
+                
+                if(rs.next()){
+                    bucleinsertar(nom, model);
+                }else{
+                    JOptionPane.showMessageDialog(null, "Artículo no encontrado","Advertencia",JOptionPane.WARNING_MESSAGE);
                 }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Artículo no encontrado","Advertencia",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error de tipo: "+e,"Advertencia",JOptionPane.WARNING_MESSAGE);
         }
         
         
         
-    }    
+    }
+    
     
         public void num(JTextField a, String s){
         a.addKeyListener(new KeyAdapter() {

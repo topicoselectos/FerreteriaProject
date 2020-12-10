@@ -320,9 +320,12 @@ public class login extends javax.swing.JFrame {
                             
                             JOptionPane.showMessageDialog(null, "Contraseña cambiada con éxito");
                             
-                            login l = new login();
-                            l.setVisible(true);
-                            this.dispose();
+                            txtnmusr.setText("");
+                            txtpsw1.setText("");
+                            txtpsw2.setText("");
+                            txtusuario.setText("");
+                            
+                            RecupContraseña.dispose();
                             
                             
                         } catch (Exception e) {

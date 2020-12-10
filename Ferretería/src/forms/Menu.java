@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,7 +47,7 @@ public class Menu extends javax.swing.JFrame {
     double iva;
     double total;
     String cod,art,nombb, cliente;
-    int cm;
+    int cm, actstock;
     
     Metodos m = new Metodos();
     
@@ -95,6 +96,8 @@ public class Menu extends javax.swing.JFrame {
         });
     }
     
+    
+    //Generamos un número random para el número de factura
     public void Random(){
         
         String random;
@@ -121,20 +124,38 @@ public class Menu extends javax.swing.JFrame {
         }
     }
     
+    
     public void busquedacliente(){
         
-        String SQL = "SELECT idtb_producto, NOMBRE, Descripcion, stock, Precio FROM tb_producto WHERE idtb_producto=" + cod;
+        String cdd = txtced.getText();
+        
+        
+        String SQL = "SELECT Nombre_cliente, Apellido, Correo, Telefono FROM tb_cliente WHERE Cédula=" + cdd;
               
         try{
                 ps = con.prepareStatement(SQL);
                 rs = ps.executeQuery();
          
-                while(rs.next()){
+                if(rs.next()){
+                     
+                    txtnombre_cliente.setText(rs.getString("Nombre_cliente"));
+                    txt_apellidos.setText(rs.getString("Apellido"));
+                    txtcorreo.setText(rs.getString("Correo"));
+                    txttelefono.setText(""+rs.getInt("Telefono"));
                     
+                    cc = txtced.getText();
+                    nomfact = txtnombre_cliente.getText();
+                    apfact = txt_apellidos.getText();
+                    contfact = txttelefono.getText();
+
+                }else{
+                    JOptionPane.showMessageDialog(null, "Registre al nuevo cliente");
                 }
                 
-        }catch(Exception e){
+        }catch(HeadlessException | SQLException e){
                         
+            
+            
                         }
     }
     
@@ -249,6 +270,7 @@ public class Menu extends javax.swing.JFrame {
                 String codigo, articulo, descripcion,stock, precio, cantidad, importa;
                 double calc = 0.0, sub = 0.0, igv =0.0;
                 int cant = 0;
+                int actss;
                 
                 if(filaseleccionada==-1){
                     JOptionPane.showMessageDialog(null,"Debe seleccionar una fila de la tabla","Advertencia", JOptionPane.WARNING_MESSAGE);
@@ -269,42 +291,58 @@ public class Menu extends javax.swing.JFrame {
                      stockk = (Double.parseDouble(txtcantidad.getText()));
                         
                         if(stockk<=ct&&stockk>0){
-                    //Aquí vamos a realizar los cálculos 
-                    sub=(Double.parseDouble(precio)*Integer.parseInt(cantidad));
-                    importa = String.valueOf(sub);
-                    
-                    modelo = (DefaultTableModel) tablacarrito.getModel();
-                    String elementos[] = {codigo,articulo,cantidad,precio,importa};
-                    modelo.addRow(elementos);
-                    
-                    calc = (Double.parseDouble(precio) * Integer.parseInt(cantidad));
-                    sub_total = sub_total + calc;
-                    iva = sub_total * 0.13;
-                    igv = iva;
-                    total = sub_total+igv;
-                    
-                    txtTotal.setText(""+total);
-                    txtiva.setText(""+igv);
-                    txtsub.setText(""+sub_total);
-                    
-                    
-                    
-                    JOptionPane.showMessageDialog(null, "¡Elemento agregado correctamente al carrito de Compras!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                    limpiarTodo();
-                        }else
-                        if(stockk==0||stockk<0){
-                             JOptionPane.showMessageDialog(null, "Debe ingresar una cantidad válida\n"+
-                                     "Igrese un nuevo valor", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                             txtcantidad.setText("");
-                        }else{
-                            JOptionPane.showMessageDialog(null, "La cantidad a llevar es insuficiente en nuestro inventario\n"+
-                                     "Igrese un nuevo valor", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                             txtcantidad.setText("");
-                        }
-                    }else{
-                        JOptionPane.showMessageDialog(null, "Ingrese una cantidad válida del producto", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                    }
-                }
+                            
+                            //Actualizamos las unidades en stock;
+                            
+                            actss = Integer.parseInt(stock);
+                            
+                            actstock = (int) (actss-stockk);
+                            
+                            String SQL2 = "UPDATE tb_producto SET stock=? WHERE idtb_producto ='"+codigo+"'"; 
+                            PreparedStatement st2 = con.prepareStatement(SQL2);
+                            
+                            st2.setInt(1, actstock);
+                            
+                            st2.executeUpdate();
+                            //Termninamos la actualización
+                            
+                            
+                                //Aquí vamos a realizar los cálculos 
+                                sub=(Double.parseDouble(precio)*Integer.parseInt(cantidad));
+                                importa = String.valueOf(sub);
+
+                                modelo = (DefaultTableModel) tablacarrito.getModel();
+                                String elementos[] = {codigo,articulo,cantidad,precio,importa};
+                                modelo.addRow(elementos);
+
+                                calc = (Double.parseDouble(precio) * Integer.parseInt(cantidad));
+                                sub_total = sub_total + calc;
+                                iva = sub_total * 0.13;
+                                igv = iva;
+                                total = sub_total+igv;
+
+                                txtTotal.setText(""+total);
+                                txtiva.setText(""+igv);
+                                txtsub.setText(""+sub_total);
+
+
+
+                                    JOptionPane.showMessageDialog(null, "¡Elemento agregado correctamente al carrito de Compras!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                                    limpiarTodo();
+                                        }else
+                                        if(stockk==0||stockk<0){
+                                             JOptionPane.showMessageDialog(null, "Debe ingresar una cantidad válida\n"+
+                                                     "Igrese un nuevo valor", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                                             txtcantidad.setText("");
+                                        }else{
+                                            JOptionPane.showMessageDialog(null, "La cantidad a llevar es insuficiente en nuestro inventario\n"+
+                                                     "Igrese un nuevo valor", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                                             txtcantidad.setText("");
+                                        }
+                                    }else{
+                                        JOptionPane.showMessageDialog(null, "Ingrese una cantidad válida del producto", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                                    }
+                                }
                 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error de tipo: "+e, "Error", JOptionPane.ERROR_MESSAGE);
@@ -312,13 +350,15 @@ public class Menu extends javax.swing.JFrame {
         
     }
     
-    public void admin(){
-        
-    }
-     
+    
     public void eliminarfiladelcarrito(){
          double x = 0.0, impuesto = 0.0, nuevototal= 0.0, importa = 0.0, precioactual;
-        int respuesta, fila;
+        int respuesta, actsumstock, sstock;
+        int produtoexistente;
+        String stock, cod, proexist;
+        
+        
+        
         
         try {
                filaseleccionada = tablacarrito.getSelectedRow();
@@ -330,24 +370,57 @@ public class Menu extends javax.swing.JFrame {
                    
                    if(respuesta == JOptionPane.YES_OPTION){
                        importa = Double.parseDouble(tablacarrito.getValueAt(filaseleccionada, 4).toString());
-                       precioactual = Double.parseDouble(txtsub.getText())-importa;
-                       sub_total = precioactual;
-                       txtsub.setText(""+sub_total);
                        
-                       impuesto = sub_total * 0.13;
-                       txtiva.setText(""+impuesto);
+                       cod = tablacarrito.getValueAt(filaseleccionada, 0).toString();
                        
-                       nuevototal = sub_total+impuesto;
+                       //Verificamos las unidades en stock del producto seleccionado
+                       String SQL = "SELECT stock FROM tb_producto WHERE idtb_producto=" + cod;
                        
-                      txtTotal.setText(""+nuevototal);
+                       ps = con.prepareStatement(SQL);
+                       rs = ps.executeQuery();
+                       
+                       if(rs.next()){
+                           
+                           produtoexistente = rs.getInt("stock");
+                       
+                           stock = tablacarrito.getValueAt(filaseleccionada, 2).toString();
                       
-                      modelo = (DefaultTableModel)tablacarrito.getModel();
-                      modelo.removeRow(filaseleccionada);
+                            sstock = Integer.parseInt(stock);
+
+                            actsumstock = produtoexistente+sstock;
+                            
+                            //Actualizamos las unidades en stock
+
+                                String SQL2 = "UPDATE tb_producto SET stock=? WHERE idtb_producto ="+cod; 
+                                PreparedStatement st2 = con.prepareStatement(SQL2);
+
+                                st2.setInt(1,actsumstock);
+
+                                st2.executeUpdate();
+
+                               JOptionPane.showMessageDialog(null, "Producto actualizado");
+
+                                    precioactual = Double.parseDouble(txtsub.getText())-importa;
+                                    sub_total = precioactual;
+                                    txtsub.setText(""+sub_total);
+
+                                    impuesto = sub_total * 0.13;
+                                    txtiva.setText(""+impuesto);
+
+                                    nuevototal = sub_total+impuesto;
+
+                                   txtTotal.setText(""+nuevototal);
+
+                                   modelo = (DefaultTableModel)tablacarrito.getModel();
+                                   modelo.removeRow(filaseleccionada);
+                      
+                       }
+                       
                       
                    }
                }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "No se ha realizado la eliminación del producto", "Verifique", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "No se ha realizado la eliminación del producto"+e, "Verifique", JOptionPane.ERROR_MESSAGE);
         }
         
     }
@@ -501,6 +574,18 @@ public class Menu extends javax.swing.JFrame {
             txtcambio.setText(""+cambio);
             
             
+            Carrito.dispose();
+            Cliente.dispose();
+            Pedido.dispose();
+            Facturación.dispose();
+            Menu m = new Menu();
+            m.dispose();
+            
+            login l = new login();
+            l.setVisible(true);
+            
+            
+            
             
         }else{
             JOptionPane.showMessageDialog(null, "Su pago debe ser mayor o igual al total de su factura\n"+
@@ -578,11 +663,7 @@ public class Menu extends javax.swing.JFrame {
         Pedido.setSize(new Dimension(558,566));
         Pedido.setLocationRelativeTo(null);
         Cliente.dispose();
-         JOptionPane.showMessageDialog(null, "Por favor seleccione continuar si desea mantener\n"+
-                "todos los productos que desea Facturar, \n"
-                 +  " de lo contrario seleccione el \n"
-                 + "producto y presione eliminar", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
-        
+         
         pedido();
         Random();
         lblnfact.setText(txtnumpedido.getText());
@@ -592,9 +673,10 @@ public class Menu extends javax.swing.JFrame {
     }
     
     public void guardarcontinuar(){
-         String nombre, apellidos, correo;
+        
+        String nombre, apellidos, correo;
         int cedula, telefono, n;
-        String SQL;
+        String SQL, SQL2;
         
         if("".equals(txtnombre_cliente.getText())||"".equals(txt_apellidos.getText())||"".equals(txtced.getText())||"".equals(txtcorreo.getText())||"".equals(txttelefono.getText())){
             JOptionPane.showMessageDialog(null, "No deje campos en blanco\n"
@@ -606,8 +688,22 @@ public class Menu extends javax.swing.JFrame {
         cedula = Integer.parseInt(txtced.getText());
         telefono = Integer.parseInt(txttelefono.getText());
         
+        
+        SQL2 = "SELECT Nombre_cliente, Apellido, Correo, Telefono FROM tb_cliente WHERE Cédula="+cedula;
+        
+      try {
+          
+           ps = con.prepareStatement(SQL2);
+           rs = ps.executeQuery();
+          
+           if(rs.next()){
+               JOptionPane.showMessageDialog(null, "Cliente ya registrado");
+               busquedacliente();
+               irpedido();
+           }else{
+           
         SQL = "INSERT INTO tb_cliente (Cédula, Nombre_cliente, Apellido, Correo, Telefono) VALUES (?,?,?,?,?)";
-        try {
+        
             PreparedStatement st = con.prepareStatement(SQL);
             st.setInt(1, cedula);
             st.setString(2, nombre);
@@ -630,7 +726,7 @@ public class Menu extends javax.swing.JFrame {
                 txttelefono.setText("");
                 
             }
-            
+           } 
             
         } catch (SQLException ex) {
             Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
@@ -711,6 +807,7 @@ public class Menu extends javax.swing.JFrame {
         btnContinuar = new javax.swing.JButton();
         jLabel17 = new javax.swing.JLabel();
         lbusuario1 = new javax.swing.JLabel();
+        btnmenu = new javax.swing.JButton();
         Cliente = new javax.swing.JDialog();
         jPanel3 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
@@ -726,6 +823,7 @@ public class Menu extends javax.swing.JFrame {
         txtced = new javax.swing.JTextField();
         btnguardar = new javax.swing.JButton();
         btnlimpiarcliente = new javax.swing.JButton();
+        btnbuscliente = new javax.swing.JButton();
         Pedido = new javax.swing.JDialog();
         jPanel4 = new javax.swing.JPanel();
         jLabel16 = new javax.swing.JLabel();
@@ -740,9 +838,7 @@ public class Menu extends javax.swing.JFrame {
         jLabel20 = new javax.swing.JLabel();
         txtidcliente = new javax.swing.JTextField();
         txtnumpedido = new javax.swing.JTextField();
-        btneliminarproduct = new javax.swing.JButton();
         btnfact = new javax.swing.JButton();
-        btnañadirfact = new javax.swing.JButton();
         Facturación = new javax.swing.JDialog();
         jLabel21 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
@@ -824,7 +920,7 @@ public class Menu extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(tablacarrito);
 
-        btneliminarfilacarrito.setText("Eliminar Fila");
+        btneliminarfilacarrito.setText("Eliminar ");
         btneliminarfilacarrito.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btneliminarfilacarritoActionPerformed(evt);
@@ -855,6 +951,13 @@ public class Menu extends javax.swing.JFrame {
 
         lbusuario1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
 
+        btnmenu.setText("Menu");
+        btnmenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnmenuActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -883,11 +986,16 @@ public class Menu extends javax.swing.JFrame {
                         .addComponent(btnContinuar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel17)
-                        .addGap(88, 88, 88))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(lbusuario1, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                        .addGap(88, 88, 88))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addComponent(lbusuario1, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addComponent(btnmenu)
+                                .addGap(362, 362, 362))))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -903,7 +1011,9 @@ public class Menu extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
                     .addComponent(txtiva, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(42, 42, 42)
+                .addGap(2, 2, 2)
+                .addComponent(btnmenu)
+                .addGap(15, 15, 15)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
                     .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -996,36 +1106,44 @@ public class Menu extends javax.swing.JFrame {
             }
         });
 
+        btnbuscliente.setText("Buscar");
+        btnbuscliente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnbusclienteActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(187, 187, 187)
+                .addComponent(jLabel4)
+                .addContainerGap(266, Short.MAX_VALUE))
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel11)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel13)
+                    .addComponent(jLabel14)
+                    .addComponent(jLabel5))
+                .addGap(56, 56, 56)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txttelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtcorreo, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtced, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtnombre_cliente, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txt_apellidos, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel11)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel13)
-                            .addComponent(jLabel14)
-                            .addComponent(jLabel5))
-                        .addGap(56, 56, 56)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(txttelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtcorreo, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtced, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtnombre_cliente, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txt_apellidos, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(btnlimpiarcliente)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btnguardar)
-                                .addGap(13, 13, 13))))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(187, 187, 187)
-                        .addComponent(jLabel4)))
-                .addContainerGap(185, Short.MAX_VALUE))
+                        .addComponent(btnlimpiarcliente)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnguardar)
+                        .addGap(13, 13, 13)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnbuscliente)
+                .addGap(49, 49, 49))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1035,8 +1153,9 @@ public class Menu extends javax.swing.JFrame {
                 .addGap(56, 56, 56)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
-                    .addComponent(txtced, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(40, 40, 40)
+                    .addComponent(txtced, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnbuscliente))
+                .addGap(38, 38, 38)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(txtnombre_cliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1102,6 +1221,11 @@ public class Menu extends javax.swing.JFrame {
         jLabel19.setText("ID Usuario:");
 
         txtiduser.setEditable(false);
+        txtiduser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtiduserActionPerformed(evt);
+            }
+        });
 
         jLabel20.setText("ID Cliente:");
 
@@ -1114,24 +1238,10 @@ public class Menu extends javax.swing.JFrame {
             }
         });
 
-        btneliminarproduct.setText("Eliminar");
-        btneliminarproduct.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btneliminarproductActionPerformed(evt);
-            }
-        });
-
         btnfact.setText("Facturar");
         btnfact.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnfactActionPerformed(evt);
-            }
-        });
-
-        btnañadirfact.setText("Añadir a factura");
-        btnañadirfact.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnañadirfactActionPerformed(evt);
             }
         });
 
@@ -1169,12 +1279,8 @@ public class Menu extends javax.swing.JFrame {
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 52, Short.MAX_VALUE)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(btneliminarproduct, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btnfact, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE))
-                            .addComponent(btnañadirfact))
-                        .addGap(45, 45, 45))))
+                        .addComponent(btnfact, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(71, 71, 71))))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1204,10 +1310,6 @@ public class Menu extends javax.swing.JFrame {
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(btnañadirfact)
-                        .addGap(64, 64, 64)
-                        .addComponent(btneliminarproduct)
-                        .addGap(29, 29, 29)
                         .addComponent(btnfact)
                         .addGap(74, 74, 74))))
         );
@@ -1501,13 +1603,13 @@ public class Menu extends javax.swing.JFrame {
         jLabel1.setEnabled(false);
         pnlMenuDeslizable.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 210, 160));
 
-        btnregistroempleados.setText("RegistrarEmpleados");
+        btnregistroempleados.setText("Ingreso de productos y empleados");
         btnregistroempleados.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnregistroempleadosActionPerformed(evt);
             }
         });
-        pnlMenuDeslizable.add(btnregistroempleados, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 510, -1, -1));
+        pnlMenuDeslizable.add(btnregistroempleados, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 510, -1, -1));
 
         jPanel1.add(pnlMenuDeslizable, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 240, 610));
 
@@ -1719,7 +1821,10 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_txtcedActionPerformed
 
     private void txtnombre_clienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtnombre_clienteActionPerformed
-
+        
+        
+        
+        
         txtnombre_cliente.transferFocus();
         // TODO add your handling code here:
     }//GEN-LAST:event_txtnombre_clienteActionPerformed
@@ -1764,16 +1869,10 @@ public class Menu extends javax.swing.JFrame {
         
     }//GEN-LAST:event_jPanel4MouseClicked
 
-    private void btneliminarproductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneliminarproductActionPerformed
-        
-        elimdefact(); 
-        
-    }//GEN-LAST:event_btneliminarproductActionPerformed
-
     private void btnfactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnfactActionPerformed
        
         irafactura();
-        
+       
     }//GEN-LAST:event_btnfactActionPerformed
 
     private void txtnumpedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtnumpedidoActionPerformed
@@ -1803,9 +1902,24 @@ public class Menu extends javax.swing.JFrame {
         
     }//GEN-LAST:event_btnregistroempleadosActionPerformed
 
-    private void btnañadirfactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnañadirfactActionPerformed
+    private void txtiduserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtiduserActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_btnañadirfactActionPerformed
+    }//GEN-LAST:event_txtiduserActionPerformed
+
+    private void btnbusclienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnbusclienteActionPerformed
+        // TODO add your handling code here:
+        
+        busquedacliente();
+        
+        
+    }//GEN-LAST:event_btnbusclienteActionPerformed
+
+    private void btnmenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnmenuActionPerformed
+        // TODO add your handling code here:
+        
+        
+        
+    }//GEN-LAST:event_btnmenuActionPerformed
 
     /*
      * @param args the command line arguments
@@ -1855,17 +1969,17 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton btnContinuar;
     private javax.swing.JButton btnInventario;
     private javax.swing.JButton btnVendedores;
-    private javax.swing.JButton btnañadirfact;
+    private javax.swing.JButton btnbuscliente;
     private javax.swing.JButton btncarrito;
     private javax.swing.JButton btnconsulta;
     private javax.swing.JButton btndesplegar;
     private javax.swing.JButton btneliminarfilacarrito;
-    private javax.swing.JButton btneliminarproduct;
     private javax.swing.JButton btnfact;
     private javax.swing.JButton btnguardar;
     private javax.swing.JButton btniralcarrito;
     private javax.swing.JButton btnlimpiar;
     private javax.swing.JButton btnlimpiarcliente;
+    private javax.swing.JButton btnmenu;
     private javax.swing.JButton btnpagar;
     private javax.swing.JButton btnregistroempleados;
     private javax.swing.JComboBox<String> cmbdept;
