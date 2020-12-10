@@ -862,6 +862,7 @@ public class Menu extends javax.swing.JFrame {
         btnInventario = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         btnregistroempleados = new javax.swing.JButton();
+        btnfactura = new javax.swing.JButton();
         pnlVendedores = new javax.swing.JPanel();
         pnlCajeros = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1595,6 +1596,14 @@ public class Menu extends javax.swing.JFrame {
         });
         pnlMenuDeslizable.add(btnregistroempleados, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 510, -1, -1));
 
+        btnfactura.setText("Búsqueda Facturas");
+        btnfactura.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnfacturaActionPerformed(evt);
+            }
+        });
+        pnlMenuDeslizable.add(btnfactura, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 550, 200, -1));
+
         jPanel1.add(pnlMenuDeslizable, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 240, 610));
 
         pnlVendedores.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -1902,14 +1911,17 @@ public class Menu extends javax.swing.JFrame {
 
     private void btnsalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnsalirActionPerformed
         
-        
-        
           System.exit(0);
            
-           
-            
-        
     }//GEN-LAST:event_btnsalirActionPerformed
+
+    private void btnfacturaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnfacturaActionPerformed
+       
+       Facturación f =  new Facturación();
+       f.setVisible(true);
+       
+        
+    }//GEN-LAST:event_btnfacturaActionPerformed
 
     /*
      * @param args the command line arguments
@@ -1965,6 +1977,7 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton btndesplegar;
     private javax.swing.JButton btneliminarfilacarrito;
     private javax.swing.JButton btnfact;
+    private javax.swing.JButton btnfactura;
     private javax.swing.JButton btnguardar;
     private javax.swing.JButton btniralcarrito;
     private javax.swing.JButton btnlimpiar;
