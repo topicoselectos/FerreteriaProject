@@ -43,9 +43,9 @@ public class Menu extends javax.swing.JFrame {
     ResultSet rs;
     
     //variables de cálculo
-    double sub_total;
-    double iva;
-    double total;
+    float sub_total;
+    float iva;
+    float total;
     String cod,art,nombb, cliente;
     int cm, actstock;
     
@@ -268,7 +268,7 @@ public class Menu extends javax.swing.JFrame {
         
         try {
                 String codigo, articulo, descripcion,stock, precio, cantidad, importa;
-                double calc = 0.0, sub = 0.0, igv =0.0;
+                float calc = 0, sub = 0, igv =0;
                 int cant = 0;
                 int actss;
                 
@@ -308,16 +308,16 @@ public class Menu extends javax.swing.JFrame {
                             
                             
                                 //Aquí vamos a realizar los cálculos 
-                                sub=(Double.parseDouble(precio)*Integer.parseInt(cantidad));
+                                sub=(Float.parseFloat(precio)*Integer.parseInt(cantidad));
                                 importa = String.valueOf(sub);
 
                                 modelo = (DefaultTableModel) tablacarrito.getModel();
                                 String elementos[] = {codigo,articulo,cantidad,precio,importa};
                                 modelo.addRow(elementos);
 
-                                calc = (Double.parseDouble(precio) * Integer.parseInt(cantidad));
+                                calc = (Float.parseFloat(precio) * Integer.parseInt(cantidad));
                                 sub_total = sub_total + calc;
-                                iva = sub_total * 0.13;
+                                iva = (float) (sub_total * 0.13);
                                 igv = iva;
                                 total = sub_total+igv;
 
@@ -401,7 +401,7 @@ public class Menu extends javax.swing.JFrame {
                                JOptionPane.showMessageDialog(null, "Producto actualizado");
 
                                     precioactual = Double.parseDouble(txtsub.getText())-importa;
-                                    sub_total = precioactual;
+                                    sub_total = (float) precioactual;
                                     txtsub.setText(""+sub_total);
 
                                     impuesto = sub_total * 0.13;
@@ -454,7 +454,7 @@ public class Menu extends javax.swing.JFrame {
                       
                        importa = Double.parseDouble(tablacarrito.getValueAt(filaseleccionada, 4).toString());
                        precioactual = Double.parseDouble(txtsub.getText())-importa;
-                       sub_total = precioactual;
+                       sub_total = (float) precioactual;
                        txtsub.setText(""+sub_total);
                        
                        impuesto = sub_total * 0.13;
@@ -572,20 +572,6 @@ public class Menu extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "¡Gracias por su compra! \n"+ nomfact+
                     ", ha sido un gusto atenderte", "Gracias", JOptionPane.INFORMATION_MESSAGE);
             txtcambio.setText(""+cambio);
-            
-            
-            Carrito.dispose();
-            Cliente.dispose();
-            Pedido.dispose();
-            Facturación.dispose();
-            Menu m = new Menu();
-            m.dispose();
-            
-            login l = new login();
-            l.setVisible(true);
-            
-            
-            
             
         }else{
             JOptionPane.showMessageDialog(null, "Su pago debe ser mayor o igual al total de su factura\n"+
@@ -807,7 +793,6 @@ public class Menu extends javax.swing.JFrame {
         btnContinuar = new javax.swing.JButton();
         jLabel17 = new javax.swing.JLabel();
         lbusuario1 = new javax.swing.JLabel();
-        btnmenu = new javax.swing.JButton();
         Cliente = new javax.swing.JDialog();
         jPanel3 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
@@ -864,6 +849,7 @@ public class Menu extends javax.swing.JFrame {
         txtpaga = new javax.swing.JTextField();
         txtcambio = new javax.swing.JTextField();
         btnpagar = new javax.swing.JButton();
+        btnsalir = new javax.swing.JButton();
         lblnfact = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         pnlMenu = new javax.swing.JPanel();
@@ -951,13 +937,6 @@ public class Menu extends javax.swing.JFrame {
 
         lbusuario1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
 
-        btnmenu.setText("Menu");
-        btnmenu.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnmenuActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -988,14 +967,9 @@ public class Menu extends javax.swing.JFrame {
                         .addComponent(jLabel17)
                         .addGap(88, 88, 88))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                                .addComponent(lbusuario1, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap())
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                                .addComponent(btnmenu)
-                                .addGap(362, 362, 362))))))
+                        .addGap(0, 682, Short.MAX_VALUE)
+                        .addComponent(lbusuario1, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1011,9 +985,7 @@ public class Menu extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
                     .addComponent(txtiva, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(2, 2, 2)
-                .addComponent(btnmenu)
-                .addGap(15, 15, 15)
+                .addGap(42, 42, 42)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
                     .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1023,7 +995,7 @@ public class Menu extends javax.swing.JFrame {
                     .addComponent(jLabel17))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lbusuario1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout CarritoLayout = new javax.swing.GroupLayout(Carrito.getContentPane());
@@ -1446,6 +1418,13 @@ public class Menu extends javax.swing.JFrame {
             }
         });
 
+        btnsalir.setText("Salir");
+        btnsalir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnsalirActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
@@ -1479,7 +1458,10 @@ public class Menu extends javax.swing.JFrame {
                                 .addComponent(txttotalfact, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(btnpagar, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(77, 77, 77)))))
+                                .addGap(77, 77, 77))))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addGap(346, 346, 346)
+                        .addComponent(btnsalir)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel6Layout.setVerticalGroup(
@@ -1504,7 +1486,9 @@ public class Menu extends javax.swing.JFrame {
                     .addComponent(txttotalfact, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnpagar, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel29))
-                .addContainerGap(99, Short.MAX_VALUE))
+                .addGap(26, 26, 26)
+                .addComponent(btnsalir)
+                .addContainerGap(48, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout FacturaciónLayout = new javax.swing.GroupLayout(Facturación.getContentPane());
@@ -1872,6 +1856,8 @@ public class Menu extends javax.swing.JFrame {
     private void btnfactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnfactActionPerformed
        
         irafactura();
+        
+        
        
     }//GEN-LAST:event_btnfactActionPerformed
 
@@ -1914,12 +1900,16 @@ public class Menu extends javax.swing.JFrame {
         
     }//GEN-LAST:event_btnbusclienteActionPerformed
 
-    private void btnmenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnmenuActionPerformed
-        // TODO add your handling code here:
+    private void btnsalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnsalirActionPerformed
         
         
         
-    }//GEN-LAST:event_btnmenuActionPerformed
+          System.exit(0);
+           
+           
+            
+        
+    }//GEN-LAST:event_btnsalirActionPerformed
 
     /*
      * @param args the command line arguments
@@ -1979,9 +1969,9 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton btniralcarrito;
     private javax.swing.JButton btnlimpiar;
     private javax.swing.JButton btnlimpiarcliente;
-    private javax.swing.JButton btnmenu;
     private javax.swing.JButton btnpagar;
     private javax.swing.JButton btnregistroempleados;
+    private javax.swing.JButton btnsalir;
     private javax.swing.JComboBox<String> cmbdept;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton4;

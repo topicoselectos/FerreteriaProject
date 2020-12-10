@@ -111,7 +111,8 @@ public class IngresoProductos extends javax.swing.JFrame {
             d=7;
         }else  
                  if(cmbdept.getSelectedItem()=="Pinturas"){
-            d=8;
+            
+                     d=8;
         }
     }
     @SuppressWarnings("unchecked")
