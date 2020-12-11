@@ -152,6 +152,8 @@ public class IngresoProductos extends javax.swing.JFrame {
         btnnuevo = new javax.swing.JButton();
         btnexistente = new javax.swing.JButton();
         btnmenu = new javax.swing.JButton();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
 
         jLabel2.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
         jLabel2.setText("Ingreso de nuevo producto");
@@ -389,64 +391,51 @@ public class IngresoProductos extends javax.swing.JFrame {
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(255, 255, 255));
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel1.setFont(new java.awt.Font("Dialog", 0, 24)); // NOI18N
-        jLabel1.setText("Ingreso de productos nuevos o existentes");
+        jLabel1.setText("INVENTARIO");
+        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 20, -1, -1));
 
-        btnnuevo.setText("Nuevo");
+        btnnuevo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/lista-de-verificacion.png"))); // NOI18N
+        btnnuevo.setText("Agregar Nuevos Productos");
+        btnnuevo.setOpaque(false);
         btnnuevo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnnuevoActionPerformed(evt);
             }
         });
+        getContentPane().add(btnnuevo, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 90, -1, 50));
 
-        btnexistente.setText("Existente");
+        btnexistente.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/lista-de-verificacion.png"))); // NOI18N
+        btnexistente.setText("Agregar o Modificar Existencias");
+        btnexistente.setOpaque(false);
         btnexistente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnexistenteActionPerformed(evt);
             }
         });
+        getContentPane().add(btnexistente, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 160, -1, 50));
 
-        btnmenu.setText("Menu");
+        btnmenu.setForeground(new java.awt.Color(255, 0, 0));
+        btnmenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img menu/menu.png"))); // NOI18N
+        btnmenu.setText("Menu Principal");
+        btnmenu.setOpaque(false);
         btnmenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnmenuActionPerformed(evt);
             }
         });
+        getContentPane().add(btnmenu, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 0, 160, 70));
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(98, 98, 98)
-                .addComponent(btnnuevo)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnexistente)
-                .addGap(122, 122, 122))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(179, 179, 179)
-                        .addComponent(btnmenu)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(46, 46, 46)
-                .addComponent(jLabel1)
-                .addGap(82, 82, 82)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnnuevo)
-                    .addComponent(btnexistente))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
-                .addComponent(btnmenu)
-                .addGap(61, 61, 61))
-        );
+        jLabel12.setBackground(new java.awt.Color(204, 204, 255));
+        jLabel12.setOpaque(true);
+        getContentPane().add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 470, 70));
+
+        jLabel15.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel15.setOpaque(true);
+        getContentPane().add(jLabel15, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 470, 170));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -681,6 +670,8 @@ public class IngresoProductos extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
